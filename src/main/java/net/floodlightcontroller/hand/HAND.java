@@ -8,6 +8,8 @@ package net.floodlightcontroller.hand;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +22,10 @@ import net.floodlightcontroller.core.module.FloodlightModuleContext;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
 import net.floodlightcontroller.core.module.IFloodlightModule;
 import net.floodlightcontroller.core.module.IFloodlightService;
+import net.floodlightcontroller.devicemanager.IDevice;
+import net.floodlightcontroller.devicemanager.IDeviceListener;
+import net.floodlightcontroller.devicemanager.IDeviceService;
+import net.floodlightcontroller.devicemanager.IEntityClass;
 import net.floodlightcontroller.linkdiscovery.ILinkDiscovery.LDUpdate;
 import net.floodlightcontroller.restserver.IRestApiService;
 import net.floodlightcontroller.staticflowentry.IStaticFlowEntryPusherService;
@@ -28,8 +34,7 @@ import net.floodlightcontroller.topology.ITopologyListener;
 import net.floodlightcontroller.topology.ITopologyService;
 import net.floodlightcontroller.topology.NodePortTuple;
 
-public class HAND implements IFloodlightModule, IStaticFlowEntryPusherService,
-		ITopologyService {
+public class HAND implements IHANDService, IFloodlightModule {
 	
 	// services needed
     protected IFloodlightProviderService floodlightProvider;
@@ -39,6 +44,58 @@ public class HAND implements IFloodlightModule, IStaticFlowEntryPusherService,
     
     protected List<HANDRule> hostRules;
     protected List<HANDGangliaHost> gangliaHosts;
+    
+    public boolean enabled;
+    
+    
+    @Override
+    public String getName(){
+    	return "HostAwareNetorkingDecisions";
+    }
+    
+    @Override
+    public Boolean isHANDEnabled(){
+    	return this.enabled;
+    }
+    
+    @Override
+    public void enableHAND(boolean enabled){
+    	logger.info("Setting Host Aware Networking Decisions to {}", enabled);
+    	this.enabled = enabled;
+    }
+    
+    @Override
+	public Collection<Class<? extends IFloodlightService>> getModuleServices() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Map<Class<? extends IFloodlightService>, IFloodlightService> getServiceImpls() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<Class<? extends IFloodlightService>> getModuleDependencies() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void init(FloodlightModuleContext context)
+			throws FloodlightModuleException {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void startUp(FloodlightModuleContext context) {
+		// TODO Auto-generated method stub
+
+	}
+    
+ /**
 
 	@Override
 	public void addListener(ITopologyListener listener) {
@@ -339,35 +396,72 @@ public class HAND implements IFloodlightModule, IStaticFlowEntryPusherService,
 		return null;
 	}
 
+
 	@Override
-	public Collection<Class<? extends IFloodlightService>> getModuleServices() {
+	public IDevice getDevice(Long deviceKey) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Map<Class<? extends IFloodlightService>, IFloodlightService> getServiceImpls() {
+	public IDevice findDevice(long macAddress, Short vlan, Integer ipv4Address,
+			Long switchDPID, Integer switchPort)
+			throws IllegalArgumentException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Collection<Class<? extends IFloodlightService>> getModuleDependencies() {
+	public IDevice findClassDevice(IEntityClass entityClass, long macAddress,
+			Short vlan, Integer ipv4Address) throws IllegalArgumentException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void init(FloodlightModuleContext context)
-			throws FloodlightModuleException {
+	public Collection<? extends IDevice> getAllDevices() {
 		// TODO Auto-generated method stub
-
+		return null;
 	}
 
 	@Override
-	public void startUp(FloodlightModuleContext context) {
+	public void addIndex(boolean perClass, EnumSet<DeviceField> keyFields) {
 		// TODO Auto-generated method stub
-
+		
 	}
+
+	@Override
+	public Iterator<? extends IDevice> queryDevices(Long macAddress,
+			Short vlan, Integer ipv4Address, Long switchDPID, Integer switchPort) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Iterator<? extends IDevice> queryClassDevices(
+			IEntityClass entityClass, Long macAddress, Short vlan,
+			Integer ipv4Address, Long switchDPID, Integer switchPort) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void addListener(IDeviceListener listener, ListenerType type) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addSuppressAPs(long swId, short port) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void removeSuppressAPs(long swId, short port) {
+		// TODO Auto-generated method stub
+		
+	}
+**/
 
 }
