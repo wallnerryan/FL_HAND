@@ -4,6 +4,8 @@ package net.floodlightcontroller.hand;
  * HAND: Host Aware Network Decisions
  * "network decisions based on Ganglia metrics and clusters"
  * @author ryan wallner
+ * 
+ * ***All host that join HAND must be running GMOND*** in order to work.
  **/
 
 import java.util.Collection;
@@ -63,6 +65,45 @@ public class HAND implements IHANDService, IFloodlightModule {
     	logger.info("Setting Host Aware Networking Decisions to {}", enabled);
     	this.enabled = enabled;
     }
+    
+    //TODO
+    /**
+     * Add/Remove host
+     * Must check floodlight topology service to see if host exists first.
+     * If not return a message.
+     * 
+     * On Delete check if host exists in HAND, remove it from HAND.
+     */
+    
+    //TODO
+    /**
+     * Add/Remove rules
+     * 
+     * Rules deal with all other modules in Floodlight.
+     * LB 			- Load Balancer 
+     * AFR / DFR 	- Add/Remove Firewall Rule
+     * PSF			- Push Static Flow
+     * AQOS / DQOS  - Add/Remove QoS
+     * 
+     * ***Rules must be check every time data is polled for a specific host***
+     *
+     */
+    
+    //TODO
+    /**
+     * Needs  a way to carry out the rules and a way to
+     * time synchronize GangliaHost.getPollingTime() with the system clock
+     * Hosts need to be polled every ^^time^^ that is set.
+     * 
+     * If the metrics add up the carry out the rule.
+     */
+    
+    //TODO
+    /**
+     * need storage source for *Metrics last polled* if a rule states
+     * "If the last polled metrics is above Xamount 5 times in a row, carry out rule Y"
+     * The last 4 polls need to be stored.
+     */
     
     @Override
 	public Collection<Class<? extends IFloodlightService>> getModuleServices() {

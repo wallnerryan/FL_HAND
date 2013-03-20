@@ -27,12 +27,17 @@ public class MetricTests {
 	
 	 MetricTests m = new MetricTests();
 	
-	 RRDatabase network_in = new RRDatabase("/Users/wallnerryan/Desktop/bytes_out.rrd");
+	 //FileNotFoundException**
+	 RRDatabase network_in = new RRDatabase("/var/lib/ganglia/rrds/HAND-Cluster/192.168.56.101/pkts_in.rrd");
 	 System.out.println(network_in.getLastUpdate());
 	 try{
 		 //go back 14 days
-		 DataChunk chunk = network_in.getData(ConsolidationFunctionType.AVERAGE, (m.getTime() - 1145000), m.getTime(), 1);
+		 //DataChunk chunk = network_in.getData(ConsolidationFunctionType.AVERAGE, 
+		 		//(m.getTime() - 1145000), m.getTime(), 1);
 		 //DataChunk chunk = network_in.getData(ConsolidationFunctionType.AVERAGE);
+		 //DataChunk chunk = network_in.getData(ConsolidationFunctionType.AVERAGE, 
+				 //(m.getTime() - 15), m.getTime(), 15);
+		 DataChunk chunk = network_in.getData(ConsolidationFunctionType.AVERAGE, 1);
 		 System.out.println("printing datachunk");
 		 System.out.println(chunk.toString());
 	 }catch (Exception e){

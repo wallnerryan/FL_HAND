@@ -3,6 +3,8 @@ package net.floodlightcontroller.hand;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Map;
+
 import net.sourceforge.jrrd.*;
 
 public class MetricConsumer {
@@ -165,6 +167,36 @@ public class MetricConsumer {
 				(this.getTime() - end), step);
 		
 		return chunk;
+	}
+	
+	/**
+	 * Gets the average for the values in a DataChunk
+	 * @param c
+	 * @return
+	 */
+	public double getAverage(DataChunk c){
+		//initialize
+		double avg = -1;
+		Map<Date, Double> vals = c.toMap(0);
+		for(Map.Entry<Date, Double> entry : vals.entrySet()){
+			//TODO
+			/**
+			 * Finish adding the values of each dateIndex together
+			 * then returning the average.
+			 */
+		}
+		return avg;
+	}
+	
+	public double getLastValue(DataChunk c){
+		double last = -1;
+		
+		//TODO
+		/**
+		 * Return the last(Most recent) value of the DataChunk
+		 */
+		
+		return last;
 	}
 	
 
