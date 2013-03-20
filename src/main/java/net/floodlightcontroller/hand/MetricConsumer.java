@@ -2,76 +2,171 @@ package net.floodlightcontroller.hand;
 
 
 import java.io.IOException;
-import net.stamfest.rrd.CommandResult;
-import net.stamfest.rrd.RRDp;
+import java.util.Date;
+import net.sourceforge.jrrd.*;
 
 public class MetricConsumer {
 	
+	///Default for ganglia
 	private String metricPath = "/var/lib/ganglia/rrds/";
+	
+	//Specific to your RRDTool fetch request
+	Date startDate;
+	Date endDate;
+	long start;
+	long end;
+	long step;
+	
+	//Specifies where the host/cluster and specific data metric ro fetch
+	String cluster;
 	String host;
-    int port;
-	boolean connection;
+	String rrd;
+	
+	public void setStartDate(Date sDate){
+		this.startDate = sDate;
+	}
+	
+	public void setEndDate(Date eDate){
+		this.endDate = eDate;
+	}
+	
+	public void setStart(long s){
+		this.start = s;
+	}
+	
+	public void setEnd(long e){
+		this.end = e;
+	}
+	
+	public void setStep(long st){
+		this.step = st;
+	}
+	
+	public void setCluster(String clusterName){
+		this.cluster = clusterName;
+	}
 	
 	public void setHost(String h){
 		this.host = h;
 	}
 	
-	public void setPort(int p){
-		this.port = p;
+	public void setRRDName(String db){
+		this.rrd = db;
 	}
 	
-	public void setHostandPort(String h, int p){
-		this.host = h;
-		this.port = p;
-	}
-	
-	public boolean testConnectToHost(){
-		try{
-			//Open and finish a test connection
-			//to see if connection is available
-			RRDp rrd = new RRDp(host, port);
-			rrd.finish();
-			connection = true;
-		}catch (IOException e) {
-			System.out.println("Error connecting to gmetric host, reason: "+ e);
-			connection = false;
-		}
-		System.out.println("Connection: "+connection);
-		
-	return connection;
-	}
-
-	/**
-	 * 
-	 * @param h
-	 * @throws Exception 
+	/*
+	 * Useful for metrics
 	 */
-	public String getHostBytesIn(String cluster, String h) throws Exception{
-		//rrds can be saved as IP's or hostnames. try both	
-	
-		//this.setConnection(host,port);
-		RRDp rrd = new RRDp(host,port);
-		
-		//Defaults to LAST metric
-		String[] command = {"fetch",
-				metricPath+cluster+"/"+h+"/"+"bytes_in.rrd",
-				"AVERAGE",
-				"-r","10",
-				"-s", "-1s"};
-		
-		
-		//Send the command
-		CommandResult result = rrd.command(command);
-		if (!result.ok){
-			System.out.println("Error getting LAST bytes_in");
-			System.out.println(result.error);
-			return "failed";
-		}else{
-			System.out.println(result.output);
-			return result.output;
-			}
-		
+	public long getTime(){
+		long seconds = System.currentTimeMillis() / 1000l;
+		return seconds;
 	}
+	
+	/**
+	 * Get the bytes inbound to the host
+	 * Uses the Start and End times to subtract from current TFE(Time from Epoch)
+	 * @param start
+	 * @param end
+	 * @param step
+	 * @param cluster
+	 * @param host
+	 * @return
+	 * @throws IOException
+	 * @throws RRDException
+	 */
+	public DataChunk getNetworkInBytes(long start,long end, long step,
+			String cluster, String host) throws IOException, RRDException{
+		
+		// Initialize the database and chunk to return
+		RRDatabase net;
+		DataChunk chunk;
+		net = new RRDatabase(metricPath+cluster+"/"+host+"bytes_in.rrd");
+		chunk = net.getData(ConsolidationFunctionType.AVERAGE,
+				(this.getTime() - start),
+				(this.getTime() - end), step);
+		
+		return chunk;
+	}
+	
+	/**
+	 * Get the bytes sent out by the host
+	 * Uses the Start and End times to subtract from current TFE(Time from Epoch)
+	 * @param start
+	 * @param end
+	 * @param step
+	 * @param cluster
+	 * @param host
+	 * @return
+	 * @throws IOException
+	 * @throws RRDException
+	 */
+	public DataChunk getNetworkOutBytes(long start,long end, long step,
+			String cluster, String host) throws IOException, RRDException{
+		
+		// Initialize the database and chunk to return
+		RRDatabase net;
+		DataChunk chunk;
+		net = new RRDatabase(metricPath+cluster+"/"+host+"bytes_out.rrd");
+		chunk = net.getData(ConsolidationFunctionType.AVERAGE,
+				(this.getTime() - start),
+				(this.getTime() - end), step);
+		
+		return chunk;
+	}
+	
+	/**
+	 * Get the memory free of the host
+	 * Uses the Start and End times to subtract from current TFE(Time from Epoch)
+	 * @param start
+	 * @param end
+	 * @param step
+	 * @param cluster
+	 * @param host
+	 * @return
+	 * @throws IOException
+	 * @throws RRDException
+	 */
+	public DataChunk getMemFree(long start,long end, long step,
+			String cluster, String host) throws IOException, RRDException{
+		
+		// Initialize the database and chunk to return
+		RRDatabase net;
+		DataChunk chunk;
+		net = new RRDatabase(metricPath+cluster+"/"+host+"mem_free.rrd");
+		chunk = net.getData(ConsolidationFunctionType.AVERAGE,
+				(this.getTime() - start),
+				(this.getTime() - end), step);
+		
+		return chunk;
+	}
+	
+	
+	/**
+	 * Get the disk space free of the host
+	 * Uses the Start and End times to subtract from current TFE(Time from Epoch)
+	 * @param start
+	 * @param end
+	 * @param step
+	 * @param cluster
+	 * @param host
+	 * @return
+	 * @throws IOException
+	 * @throws RRDException
+	 */
+	public DataChunk getDiskFree(long start,long end, long step,
+			String cluster, String host) throws IOException, RRDException{
+		
+		// Initialize the database and chunk to return
+		RRDatabase net;
+		DataChunk chunk;
+		net = new RRDatabase(metricPath+cluster+"/"+host+"mem_free.rrd");
+		chunk = net.getData(ConsolidationFunctionType.AVERAGE,
+				(this.getTime() - start),
+				(this.getTime() - end), step);
+		
+		return chunk;
+	}
+	
 
 
 }
