@@ -7,7 +7,7 @@ import org.restlet.routing.Router;
 public class HANDWebRoutable implements RestletRoutable {
 
 	 /**
-     * Create the Restlet router
+     * Create the Reslet router
      */
     @Override
     public Router getRestlet(Context context) {

@@ -25,4 +25,5 @@ net.floodlightcontroller.core.test.MockFloodlightProvider
 net.floodlightcontroller.core.test.MockThreadPoolService
 net.floodlightcontroller.firewall.Firewall
 net.floodlightcontroller.loadbalancer.LoadBalancer
+net.floodlightcontroller.qos.QoS
 net.floodlightcontroller.hand.HAND

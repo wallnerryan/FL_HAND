@@ -19,7 +19,7 @@ public class MetricConsumer {
 	long end;
 	long step;
 	
-	//Specifies where the host/cluster and specific data metric ro fetch
+	//Specifies where the host/cluster and specific data metric to fetch
 	String cluster;
 	String host;
 	String rrd;

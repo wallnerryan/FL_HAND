@@ -15,6 +15,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.openflow.protocol.OFFlowMod;
 import org.slf4j.Logger;
@@ -64,6 +66,56 @@ public class HAND implements IHANDService, IFloodlightModule {
     public void enableHAND(boolean enabled){
     	logger.info("Setting Host Aware Networking Decisions to {}", enabled);
     	this.enabled = enabled;
+    	
+    	// when enabled, we need to start the timed polling mechanism
+    	this.startTimerPollingTask();
+    }
+    
+    /**
+     * This will start a scheduled task to run every second.
+     * 	-this will run a procedure to check the current time, the
+     *  subsequently check the current rules for there @nextCheckTime
+     *  and see if they match. If the do, the appropriate action will be
+     *  taken to consume the needed metrics for the host's rule and
+     *  analyze the rules to see if any actions need be taken.
+     *  When the rules is check it will appear in the Messaged queue with
+     *  a time stamp.
+     */
+    public void startTimerPollingTask(){
+    	long delay = 1000; // delay for 1 sec.
+    	long period = 1000; // repeat every sec.
+    	final boolean enabled = this.isHANDEnabled();
+    	
+    	//Create a new timer and add a task to it. Our task is
+    	// right inside using the run method of a new TimerTask.
+    	final Timer timer = new Timer();
+    	timer.scheduleAtFixedRate(new TimerTask(){
+    		public void run(){
+    			if(!(enabled)){
+    				//Cancel the task if HAND is not enabled.
+    				
+    				//This is important to check before each second
+    				//incase HAND becomes disabled at any point.
+    				timer.cancel();
+    			}else{
+    				//Stamp this with time in seconds since Jan. 1 1970 midnight :)
+    				long currentTime = System.currentTimeMillis() / 1000l;
+    				logger.info("Checking Rules : "+currentTime);
+    				
+    				//TODO
+    				/**
+    				 * Logic here needs carry out the above description 
+    				 * 
+    				 * 	1. current time needs to be checked against all rules
+    				 * 	2. If a rule matches, take action
+    				 * 	3. Queuing and concurrency methods need to be thought of here.
+    				 */
+    				
+    			}
+    		}
+    		
+    	}, delay, period);
+    	
     }
     
     //TODO
@@ -126,13 +178,21 @@ public class HAND implements IHANDService, IFloodlightModule {
 	@Override
 	public void init(FloodlightModuleContext context)
 			throws FloodlightModuleException {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void startUp(FloodlightModuleContext context) {
-		// TODO Auto-generated method stub
+		
+		
+		// One of the things we need to do is start our timing
+		// mechanism when the module is started.
+		if(this.isHANDEnabled()){
+			this.startTimerPollingTask();
+		}
+		else{
+			logger.info("Disabled, waiting to enable to start polling hosts.");
+		}
 
 	}
     
