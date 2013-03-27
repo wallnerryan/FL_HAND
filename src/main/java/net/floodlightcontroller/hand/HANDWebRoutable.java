@@ -16,7 +16,7 @@ public class HANDWebRoutable implements RestletRoutable {
         /**
          * Manipulates the module
          **/
-        router.attach("/module/{op}/json", HANDResource.class);
+        router.attach("/module/{foo}/json", HANDResource.class);
         
         /**
          * Shows decision rule and host/cluster pairings
@@ -35,11 +35,11 @@ public class HANDWebRoutable implements RestletRoutable {
 
     /**
      * Set the base path for HAND
-     * "ghand" ganglia host aware networking decisions
+     * "hand" Ganglia's host aware networking decisions module for Floodlight
      */
     @Override
     public String basePath() {
-        return "/wm/ghand";
+        return "/wm/hand";
     }
 
 }

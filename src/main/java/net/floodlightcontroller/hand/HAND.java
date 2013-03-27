@@ -68,7 +68,8 @@ public class HAND implements IHANDService, IFloodlightModule {
     	this.enabled = enabled;
     	
     	// when enabled, we need to start the timed polling mechanism
-    	this.startTimerPollingTask();
+    	if (enabled)
+    		this.startTimerPollingTask();
     }
     
     /**
