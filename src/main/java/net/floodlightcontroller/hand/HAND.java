@@ -49,6 +49,14 @@ public class HAND implements IHANDService, IFloodlightModule {
     protected List<HANDRule> hostRules;
     protected List<HANDGangliaHost> gangliaHosts;
     
+    //TODO create constants for storage/parsing
+    /**
+     * 
+     *  IMPORTANT
+     * 
+     * 
+     */
+    
     public boolean enabled;
     
     

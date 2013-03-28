@@ -13,13 +13,31 @@ public class HANDResource extends ServerResource {
 		//Retrieve the operation demanded in the REST url.
 		String foo = (String) getRequestAttributes().get("foo");
 		
-		//TODO Return whether this is enabled or not. on status
+
+		if (foo.equalsIgnoreCase("status")){
+			if(hand.isHANDEnabled()){
+				return "{\"result\" : \"HAND enabled\"}";
+			}
+			else{
+				return "{\"result\" : \"HAND disabled\"}";
+			}
+		}
 		
-		//TODO enable on "enable"
+
+		if (foo.equalsIgnoreCase("enable")){
+			hand.enableHAND(true);
+				return "{\"result\" : \"success\", \"details\" : \"HAND is running\"}";
+		}
 		
-		//TODO disable on "disable"
+
+		if (foo.equalsIgnoreCase("disable")){
+			hand.enableHAND(false);
+			return "{\"result\" : \"success\", \"details\" : \"HAND is stopped\"}";
+		}
 		
-		
+	
+		//If {foo} does not match any option
+		return "{\"status\" : \"failure\", \"details\" : \"invalid operation\"}";
 	}
 
 }
