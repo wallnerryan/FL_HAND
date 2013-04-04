@@ -2,12 +2,16 @@ package net.floodlightcontroller.hand;
 
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import net.sourceforge.jrrd.*;
 
 public class MetricConsumer {
+	protected static Logger logger;
 	
 	///Default for ganglia
 	private String metricPath = "/var/lib/ganglia/rrds/";
@@ -176,28 +180,49 @@ public class MetricConsumer {
 	 */
 	public double getAverage(DataChunk c){
 		//initialize
-		double avg = -1;
+		double avg = 0;
+		
+		@SuppressWarnings("unchecked") //temporary, should cast Date and Double to Map types
+									   //to comply with Java generics
 		Map<Date, Double> vals = c.toMap(0);
-		for(Map.Entry<Date, Double> entry : vals.entrySet()){
-			//TODO
-			/**
-			 * Finish adding the values of each dateIndex together
-			 * then returning the average.
-			 */
+		if(!(vals.isEmpty())){
+			for(Map.Entry<Date, Double> entry : vals.entrySet()){
+				try{
+					avg = avg + entry.getValue();
+				}catch(IllegalStateException e){
+					logger.info(e.toString());
+				}
+			}
+			return (avg / vals.size());
 		}
-		return avg;
+		else{
+			logger.info("Empty Data Set, Nothing to Average: Returning 0");
+			return 0;
+		}
 	}
 	
 	public double getLastValue(DataChunk c){
-		double last = -1;
 		
-		//TODO
-		/**
-		 * Return the last(Most recent) value of the DataChunk
-		 */
+		@SuppressWarnings("unchecked") //temporary, should cast Date and Double to Map types
+		   							   //to comply with Java generics
+		Map<Date, Double> vals = c.toMap(0);
+		Collection<Double> nums = vals.values();
 		
+		@SuppressWarnings({ "rawtypes", "unchecked" }) //temporary, should cast Date and Double to Map types
+		   											   //to comply with Java generics
+		ArrayList num_list = new ArrayList(nums);
+		
+		double last;
+		last = (double) num_list.get((num_list.size() -1));
 		return last;
 	}
+	
+	/**
+	 * Add data get functions and any other operatiuons
+	 * 
+	 * 
+	 * 
+	 */
 	
 
 
