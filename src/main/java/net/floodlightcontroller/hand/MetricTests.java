@@ -30,6 +30,8 @@ public class MetricTests {
 	    System.out.println(result.output);
 	*/
 	
+	 /** commented out for build
+	 
 	 MetricTests m = new MetricTests();
 	
 	 //FileNotFoundException**
@@ -48,6 +50,8 @@ public class MetricTests {
 	 }catch (Exception e){
 		 System.out.println(e);
 	 }
+	 
+	 **/
  }
 
 }

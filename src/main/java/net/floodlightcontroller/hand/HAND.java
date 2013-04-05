@@ -8,9 +8,11 @@ package net.floodlightcontroller.hand;
  * ***All host that join HAND must be running GMOND*** in order to work.
  **/
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +21,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.openflow.protocol.OFFlowMod;
+import org.openflow.protocol.OFType;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.module.FloodlightModuleContext;
@@ -30,7 +34,12 @@ import net.floodlightcontroller.devicemanager.IDevice;
 import net.floodlightcontroller.devicemanager.IDeviceListener;
 import net.floodlightcontroller.devicemanager.IDeviceService;
 import net.floodlightcontroller.devicemanager.IEntityClass;
+import net.floodlightcontroller.firewall.Firewall;
+import net.floodlightcontroller.firewall.FirewallRule;
+import net.floodlightcontroller.firewall.FirewallWebRoutable;
 import net.floodlightcontroller.linkdiscovery.ILinkDiscovery.LDUpdate;
+import net.floodlightcontroller.packet.IPv4;
+import net.floodlightcontroller.qos.IQoSService;
 import net.floodlightcontroller.restserver.IRestApiService;
 import net.floodlightcontroller.staticflowentry.IStaticFlowEntryPusherService;
 import net.floodlightcontroller.storage.IStorageSourceService;
@@ -42,20 +51,72 @@ public class HAND implements IHANDService, IFloodlightModule {
 	
 	// services needed
     protected IFloodlightProviderService floodlightProvider;
+    protected IStaticFlowEntryPusherService flowPusher;
     protected IStorageSourceService storageSource;
     protected IRestApiService restApi;
     protected static Logger logger;
     
-    protected List<HANDRule> hostRules;
-    protected List<HANDGangliaHost> gangliaHosts;
+    protected ArrayList<HANDRule> hostRules;
+    protected ArrayList<HANDGangliaHost> gangliaHosts;
+    protected ArrayList<String> messages;
+    
     
     //TODO create constants for storage/parsing
+    //TODO IMPORTANT
+    
     /**
-     * 
-     *  IMPORTANT
-     * 
-     * 
+     * Table for hosts in storage source
      */
+    public static final String HOSTS_TABLE_NAME = "hand_hosts";
+    public static final String COLUMN_HID = "hostid";
+    public static final String COLUMN_CLUSTER = "cluster";
+    public static final String COLUMN_NAME = "name";
+    public static final String COLUMN_IPADD = "ip_address";
+    public static final String COLUMN_MACADD = "mac_address";
+    public static final String COLUMN_FIRSTHOP = "first_hop_switch";
+    public static String HostColumnNames[] = {
+    	COLUMN_HID,
+    	COLUMN_CLUSTER,
+    	COLUMN_NAME,
+    	COLUMN_IPADD,
+    	COLUMN_MACADD,
+    	COLUMN_FIRSTHOP
+    	};
+    
+    /**
+     * Table for rules in storage source
+     */
+    public static final String RULES_TABLE_NAME = "hand_rules";
+    public static final String COLUMN_RID = "ruleid";
+    public static final String COLUMN_PRIOR = "priority";
+    public static final String COLUMN_POLLTIME = "polling_time";
+    public static final String COLUMN_TIMEADD = "time_added";
+    public static final String COLUMN_NEXTCHECK = "next_check_time";
+    public static final String COLUMN_ACTIVE = "active";
+    public static final String COLUMN_ASSOC = "host_association";
+    public static final String COLUMN_METRICS = "metrics";
+    public static final String COLUMN_FRULE = "firewall_rule";
+    public static final String COLUMN_QOS = "qos_rule";
+    public static final String COLUMN_STATICFLOW = "static_flow";
+    public static final String COLUMN_CHECKLIMIT = "check_limit";
+    public static final String COLUMN_CURRCHECK = "current_check";
+    public static final String COLUMN_ACTION = "action";
+    public static String RuleColumnNames[] = {
+    	COLUMN_RID,
+    	COLUMN_PRIOR,
+    	COLUMN_POLLTIME,
+    	COLUMN_TIMEADD,
+    	COLUMN_NEXTCHECK,
+    	COLUMN_ACTIVE,
+    	COLUMN_ASSOC,
+    	COLUMN_METRICS,
+    	COLUMN_FRULE,
+    	COLUMN_QOS,
+    	COLUMN_STATICFLOW,
+    	COLUMN_CHECKLIMIT,
+    	COLUMN_CURRCHECK,
+    	COLUMN_ACTION,
+    	};
     
     public boolean enabled;
     
@@ -78,6 +139,13 @@ public class HAND implements IHANDService, IFloodlightModule {
     	// when enabled, we need to start the timed polling mechanism
     	if (enabled)
     		this.startTimerPollingTask();
+    	if (!(enabled)){
+    		logger.info("HAND disabled");
+    	}
+    }
+    
+    public ArrayList<String> getMessages(){
+    	return this.messages;
     }
     
     /**
@@ -89,6 +157,9 @@ public class HAND implements IHANDService, IFloodlightModule {
      *  analyze the rules to see if any actions need be taken.
      *  When the rules is check it will appear in the Messaged queue with
      *  a time stamp.
+     *  
+     *  //This is inefficient at large scale, but to get things working 
+     *  //on a small scale it will be used.
      */
     public void startTimerPollingTask(){
     	long delay = 1000; // delay for 1 sec.
@@ -104,7 +175,7 @@ public class HAND implements IHANDService, IFloodlightModule {
     				//Cancel the task if HAND is not enabled.
     				
     				//This is important to check before each second
-    				//incase HAND becomes disabled at any point.
+    				//in case HAND becomes disabled at any point.
     				timer.cancel();
     			}else{
     				//Stamp this with time in seconds since Jan. 1 1970 midnight :)
@@ -127,7 +198,87 @@ public class HAND implements IHANDService, IFloodlightModule {
     	
     }
     
-    //TODO
+   
+    
+    @Override
+	public Collection<Class<? extends IFloodlightService>> getModuleServices() {
+    	//This module should depend on FloodlightProviderService,
+    			// IStorageSourceProviderService, IRestApiService, &
+    			// IStaticFlowEntryPusherService
+    			Collection<Class<? extends IFloodlightService>> l =
+    					new ArrayList<Class<? extends IFloodlightService>>();
+    			l.add(IFloodlightProviderService.class);
+    			l.add(IStorageSourceService.class);
+    	        l.add(IRestApiService.class);
+    	        l.add(IStaticFlowEntryPusherService.class);
+    			return l;
+	}
+
+	@Override
+	public Map<Class<? extends IFloodlightService>, IFloodlightService> getServiceImpls() {
+		Map<Class<? extends IFloodlightService>,
+        IFloodlightService> m = 
+        new HashMap<Class<? extends IFloodlightService>,
+        IFloodlightService>();
+        // Implements the QoS service
+        m.put(IHANDService.class, this);
+        return m;
+	}
+
+	@Override
+	public Collection<Class<? extends IFloodlightService>> getModuleDependencies() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void init(FloodlightModuleContext context)
+			throws FloodlightModuleException {
+		floodlightProvider = context
+                .getServiceImpl(IFloodlightProviderService.class);
+        storageSource = context.getServiceImpl(IStorageSourceService.class);
+        restApi = context.getServiceImpl(IRestApiService.class);
+        hostRules = new ArrayList<HANDRule>();
+        logger = LoggerFactory.getLogger(HAND.class);
+
+        // start disabled
+        enabled = true;
+	}
+
+	@Override
+	public void startUp(FloodlightModuleContext context) {
+		
+		//initialize
+		 // register REST interface
+        restApi.addRestletRoutable(new HANDWebRoutable());
+
+        // storage for hosts
+        storageSource.createTable(HOSTS_TABLE_NAME, null);
+        storageSource.setTablePrimaryKeyName(HOSTS_TABLE_NAME, COLUMN_HID);
+     	//synchronized (gangliaHosts) {
+        //    this.gangliaHosts = readHostsFromStorage();
+        //}
+        
+        //storage for rules
+        storageSource.createTable(RULES_TABLE_NAME, null);
+        storageSource.setTablePrimaryKeyName(RULES_TABLE_NAME, COLUMN_RID);
+        //synchronized (hostRules) {
+        //    this.hostRules = readRulesFromStorage();
+        //}
+        
+		
+		// One of the things we need to do is start our timing
+		// mechanism when the module is started.
+		if(this.isHANDEnabled()){
+			this.startTimerPollingTask();
+		}
+		else{
+			logger.info("Disabled, waiting to enable to start polling hosts.");
+		}
+
+	}
+    
+	 //TODO
     /**
      * Add/Remove host
      * Must check floodlight topology service to see if host exists first.
@@ -135,6 +286,15 @@ public class HAND implements IHANDService, IFloodlightModule {
      * 
      * On Delete check if host exists in HAND, remove it from HAND.
      */
+	
+	public void addGangliaHost(IPv4 address){
+		//TODO add for ip address of host
+		
+	}
+	
+	public void addGangliaHost(String hostName){
+		//TODO add for hostname of host
+	}
     
     //TODO
     /**
@@ -162,416 +322,8 @@ public class HAND implements IHANDService, IFloodlightModule {
     //TODO
     /**
      * need storage source for *Metrics last polled* if a rule states
-     * "If the last polled metrics is above Xamount 5 times in a row, carry out rule Y"
+     * "If the last polled metrics is above X amount 5 times in a row, carry out rule Y"
      * The last 4 polls need to be stored.
      */
-    
-    @Override
-	public Collection<Class<? extends IFloodlightService>> getModuleServices() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Map<Class<? extends IFloodlightService>, IFloodlightService> getServiceImpls() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Collection<Class<? extends IFloodlightService>> getModuleDependencies() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void init(FloodlightModuleContext context)
-			throws FloodlightModuleException {
-
-	}
-
-	@Override
-	public void startUp(FloodlightModuleContext context) {
-		
-		
-		// One of the things we need to do is start our timing
-		// mechanism when the module is started.
-		if(this.isHANDEnabled()){
-			this.startTimerPollingTask();
-		}
-		else{
-			logger.info("Disabled, waiting to enable to start polling hosts.");
-		}
-
-	}
-    
- /**
-
-	@Override
-	public void addListener(ITopologyListener listener) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public Date getLastUpdateTime() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean isAttachmentPointPort(long switchid, short port) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isAttachmentPointPort(long switchid, short port,
-			boolean tunnelEnabled) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public long getOpenflowDomainId(long switchId) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public long getOpenflowDomainId(long switchId, boolean tunnelEnabled) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public long getL2DomainId(long switchId) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public long getL2DomainId(long switchId, boolean tunnelEnabled) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public boolean inSameOpenflowDomain(long switch1, long switch2) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean inSameOpenflowDomain(long switch1, long switch2,
-			boolean tunnelEnabled) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public Set<Long> getSwitchesInOpenflowDomain(long switchDPID) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Set<Long> getSwitchesInOpenflowDomain(long switchDPID,
-			boolean tunnelEnabled) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean inSameL2Domain(long switch1, long switch2) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean inSameL2Domain(long switch1, long switch2,
-			boolean tunnelEnabled) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isBroadcastDomainPort(long sw, short port) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isBroadcastDomainPort(long sw, short port,
-			boolean tunnelEnabled) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isAllowed(long sw, short portId) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isAllowed(long sw, short portId, boolean tunnelEnabled) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isConsistent(long oldSw, short oldPort, long newSw,
-			short newPort) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isConsistent(long oldSw, short oldPort, long newSw,
-			short newPort, boolean tunnelEnabled) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isInSameBroadcastDomain(long s1, short p1, long s2, short p2) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isInSameBroadcastDomain(long s1, short p1, long s2,
-			short p2, boolean tunnelEnabled) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public Set<Short> getPortsWithLinks(long sw) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Set<Short> getPortsWithLinks(long sw, boolean tunnelEnabled) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Set<Short> getBroadcastPorts(long targetSw, long src, short srcPort) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Set<Short> getBroadcastPorts(long targetSw, long src, short srcPort,
-			boolean tunnelEnabled) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean isIncomingBroadcastAllowed(long sw, short portId) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isIncomingBroadcastAllowed(long sw, short portId,
-			boolean tunnelEnabled) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public NodePortTuple getOutgoingSwitchPort(long src, short srcPort,
-			long dst, short dstPort) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public NodePortTuple getOutgoingSwitchPort(long src, short srcPort,
-			long dst, short dstPort, boolean tunnelEnabled) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public NodePortTuple getIncomingSwitchPort(long src, short srcPort,
-			long dst, short dstPort) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public NodePortTuple getIncomingSwitchPort(long src, short srcPort,
-			long dst, short dstPort, boolean tunnelEnabled) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public NodePortTuple getAllowedOutgoingBroadcastPort(long src,
-			short srcPort, long dst, short dstPort) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public NodePortTuple getAllowedOutgoingBroadcastPort(long src,
-			short srcPort, long dst, short dstPort, boolean tunnelEnabled) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public NodePortTuple getAllowedIncomingBroadcastPort(long src, short srcPort) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public NodePortTuple getAllowedIncomingBroadcastPort(long src,
-			short srcPort, boolean tunnelEnabled) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Set<NodePortTuple> getBroadcastDomainPorts() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Set<NodePortTuple> getTunnelPorts() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Set<NodePortTuple> getBlockedPorts() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<LDUpdate> getLastLinkUpdates() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Set<Short> getPorts(long sw) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void addFlow(String name, OFFlowMod fm, String swDpid) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void deleteFlow(String name) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void deleteFlowsForSwitch(long dpid) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void deleteAllFlows() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public Map<String, Map<String, OFFlowMod>> getFlows() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Map<String, OFFlowMod> getFlows(String dpid) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	@Override
-	public IDevice getDevice(Long deviceKey) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IDevice findDevice(long macAddress, Short vlan, Integer ipv4Address,
-			Long switchDPID, Integer switchPort)
-			throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IDevice findClassDevice(IEntityClass entityClass, long macAddress,
-			Short vlan, Integer ipv4Address) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Collection<? extends IDevice> getAllDevices() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void addIndex(boolean perClass, EnumSet<DeviceField> keyFields) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public Iterator<? extends IDevice> queryDevices(Long macAddress,
-			Short vlan, Integer ipv4Address, Long switchDPID, Integer switchPort) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Iterator<? extends IDevice> queryClassDevices(
-			IEntityClass entityClass, Long macAddress, Short vlan,
-			Integer ipv4Address, Long switchDPID, Integer switchPort) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void addListener(IDeviceListener listener, ListenerType type) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void addSuppressAPs(long swId, short port) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void removeSuppressAPs(long swId, short port) {
-		// TODO Auto-generated method stub
-		
-	}
-**/
 
 }

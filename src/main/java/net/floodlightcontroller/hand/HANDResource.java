@@ -35,6 +35,10 @@ public class HANDResource extends ServerResource {
 			return "{\"result\" : \"success\", \"details\" : \"HAND is stopped\"}";
 		}
 		
+		if (foo.equalsIgnoreCase("messages")){
+			return hand.getMessages();
+		}
+		
 	
 		//If {foo} does not match any option
 		return "{\"status\" : \"failure\", \"details\" : \"invalid operation\"}";

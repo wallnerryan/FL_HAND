@@ -8,10 +8,13 @@ import java.util.Date;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.slf4j.LoggerFactory;
+
+import net.floodlightcontroller.firewall.Firewall;
 import net.sourceforge.jrrd.*;
 
 public class MetricConsumer {
-	protected static Logger logger;
+	Logger logger = Logger.getLogger("metricConsumer Logger");
 	
 	///Default for ganglia
 	private String metricPath = "/var/lib/ganglia/rrds/";
@@ -212,8 +215,8 @@ public class MetricConsumer {
 		   											   //to comply with Java generics
 		ArrayList num_list = new ArrayList(nums);
 		
-		double last;
-		last = (double) num_list.get((num_list.size() -1));
+		Double last;
+		last = (Double) num_list.get((num_list.size() -1));
 		return last;
 	}
 	

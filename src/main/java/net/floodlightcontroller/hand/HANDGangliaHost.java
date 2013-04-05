@@ -9,6 +9,7 @@ public class HANDGangliaHost {
 	public String name; //Translates the host name used for the RRDFetch
 	public String ipAddress; //can use IPv4.toIPv4Address(String add)
 	public String macAddress; //can use MACAddress.valueOf(String MACadd)
+	public long firstHop;	//ID of first hop OF switch.
 	
 	public HANDGangliaHost(){
 		
@@ -17,6 +18,7 @@ public class HANDGangliaHost {
 		this.name = null;
 		this.ipAddress = null;
 		this.macAddress = null;
+		this.firstHop = 0;
 	}
 	
 	/**
