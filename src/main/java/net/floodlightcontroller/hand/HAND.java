@@ -60,10 +60,6 @@ public class HAND implements IHANDService, IFloodlightModule {
     protected ArrayList<HANDGangliaHost> gangliaHosts;
     protected ArrayList<String> messages;
     
-    
-    //TODO create constants for storage/parsing
-    //TODO IMPORTANT
-    
     /**
      * Table for hosts in storage source
      */
@@ -202,16 +198,10 @@ public class HAND implements IHANDService, IFloodlightModule {
     
     @Override
 	public Collection<Class<? extends IFloodlightService>> getModuleServices() {
-    	//This module should depend on FloodlightProviderService,
-    			// IStorageSourceProviderService, IRestApiService, &
-    			// IStaticFlowEntryPusherService
-    			Collection<Class<? extends IFloodlightService>> l =
-    					new ArrayList<Class<? extends IFloodlightService>>();
-    			l.add(IFloodlightProviderService.class);
-    			l.add(IStorageSourceService.class);
-    	        l.add(IRestApiService.class);
-    	        l.add(IStaticFlowEntryPusherService.class);
-    			return l;
+    	Collection<Class<? extends IFloodlightService>> l = 
+                new ArrayList<Class<? extends IFloodlightService>>();
+        l.add(IHANDService.class);
+        return l;
 	}
 
 	@Override
@@ -227,8 +217,16 @@ public class HAND implements IHANDService, IFloodlightModule {
 
 	@Override
 	public Collection<Class<? extends IFloodlightService>> getModuleDependencies() {
-		// TODO Auto-generated method stub
-		return null;
+		//This module should depend on FloodlightProviderService,
+		// IStorageSourceProviderService, IRestApiService, &
+		// IStaticFlowEntryPusherService
+		Collection<Class<? extends IFloodlightService>> l =
+				new ArrayList<Class<? extends IFloodlightService>>();
+		l.add(IFloodlightProviderService.class);
+		l.add(IStorageSourceService.class);
+        l.add(IRestApiService.class);
+        l.add(IStaticFlowEntryPusherService.class);
+		return l;
 	}
 
 	@Override
