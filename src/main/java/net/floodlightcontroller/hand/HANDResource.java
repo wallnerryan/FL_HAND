@@ -15,28 +15,28 @@ public class HANDResource extends ServerResource {
 		
 
 		if (foo.equalsIgnoreCase("status")){
-			if(hand.isHANDEnabled()){
-				return "{\"result\" : \"HAND enabled\"}";
-			}
-			else{
-				return "{\"result\" : \"HAND disabled\"}";
-			}
+			return hand.isHANDEnabled();
 		}
 		
 
-		if (foo.equalsIgnoreCase("enable")){
+		else if (foo.equalsIgnoreCase("enable")){
 			hand.enableHAND(true);
 				return "{\"result\" : \"success\", \"details\" : \"HAND is running\"}";
 		}
 		
 
-		if (foo.equalsIgnoreCase("disable")){
+		else if (foo.equalsIgnoreCase("disable")){
 			hand.enableHAND(false);
 			return "{\"result\" : \"success\", \"details\" : \"HAND is stopped\"}";
 		}
 		
-		if (foo.equalsIgnoreCase("messages")){
-			return hand.getMessages();
+		else if (foo.equalsIgnoreCase("messages")){
+			if(hand.getMessages().isEmpty()){
+				return "There are currently no administrative messages.";
+			}
+			else{
+				return hand.getMessages();
+			}
 		}
 		
 	

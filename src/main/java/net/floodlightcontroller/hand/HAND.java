@@ -237,6 +237,7 @@ public class HAND implements IHANDService, IFloodlightModule {
         storageSource = context.getServiceImpl(IStorageSourceService.class);
         restApi = context.getServiceImpl(IRestApiService.class);
         hostRules = new ArrayList<HANDRule>();
+        messages = new ArrayList<String>();
         logger = LoggerFactory.getLogger(HAND.class);
 
         // start disabled
