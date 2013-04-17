@@ -38,9 +38,9 @@ public class HANDThreshold {
 	 */
 	public double checkValue( double inputValue){
 		//Compare the values
-		double backwash = inputValue - this.value;
+		double backWash = inputValue - this.value;
 		
-		return backwash;
+		return backWash;
 	}
 	
 	
@@ -66,9 +66,9 @@ public class HANDThreshold {
 	public int hashCode(){
 		final int primeNum = 2521;
 		int result = super.hashCode();
-		
-		//TODO
-		
+		result = primeNum * result + (int) ruleAssoc;
+		result = primeNum * result + threshold.hashCode();
+		result = primeNum * result + (int) value;
 		return result;
 		
 	}

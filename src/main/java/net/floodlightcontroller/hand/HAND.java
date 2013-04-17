@@ -10,26 +10,25 @@ package net.floodlightcontroller.hand;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
-import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import org.openflow.protocol.OFFlowMod;
-import org.openflow.protocol.OFType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.module.FloodlightModuleContext;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
 import net.floodlightcontroller.core.module.IFloodlightModule;
 import net.floodlightcontroller.core.module.IFloodlightService;
+import net.floodlightcontroller.packet.IPv4;
+import net.floodlightcontroller.restserver.IRestApiService;
+import net.floodlightcontroller.staticflowentry.IStaticFlowEntryPusherService;
+import net.floodlightcontroller.storage.IStorageSourceService;
+/**
+import net.floodlightcontroller.topology.ITopologyListener;
+import net.floodlightcontroller.topology.ITopologyService;
+import net.floodlightcontroller.topology.NodePortTuple;
 import net.floodlightcontroller.devicemanager.IDevice;
 import net.floodlightcontroller.devicemanager.IDeviceListener;
 import net.floodlightcontroller.devicemanager.IDeviceService;
@@ -38,15 +37,13 @@ import net.floodlightcontroller.firewall.Firewall;
 import net.floodlightcontroller.firewall.FirewallRule;
 import net.floodlightcontroller.firewall.FirewallWebRoutable;
 import net.floodlightcontroller.linkdiscovery.ILinkDiscovery.LDUpdate;
-import net.floodlightcontroller.packet.IPv4;
-import net.floodlightcontroller.qos.IQoSService;
-import net.floodlightcontroller.restserver.IRestApiService;
-import net.floodlightcontroller.staticflowentry.IStaticFlowEntryPusherService;
-import net.floodlightcontroller.storage.IStorageSourceService;
-import net.floodlightcontroller.topology.ITopologyListener;
-import net.floodlightcontroller.topology.ITopologyService;
-import net.floodlightcontroller.topology.NodePortTuple;
+**/
 
+/**
+ * 
+ * @author wallnerryan
+ *
+ */
 public class HAND implements IHANDService, IFloodlightModule {
 	
 	// services needed
@@ -66,7 +63,7 @@ public class HAND implements IHANDService, IFloodlightModule {
     public static final String HOSTS_TABLE_NAME = "hand_hosts";
     public static final String COLUMN_HID = "hostid";
     public static final String COLUMN_CLUSTER = "cluster";
-    public static final String COLUMN_NAME = "name";
+    public static final String COLUMN_NAME = "hostname";
     public static final String COLUMN_IPADD = "ip_address";
     public static final String COLUMN_MACADD = "mac_address";
     public static final String COLUMN_FIRSTHOP = "first_hop_switch";
@@ -254,16 +251,16 @@ public class HAND implements IHANDService, IFloodlightModule {
         // storage for hosts
         storageSource.createTable(HOSTS_TABLE_NAME, null);
         storageSource.setTablePrimaryKeyName(HOSTS_TABLE_NAME, COLUMN_HID);
-     	//synchronized (gangliaHosts) {
-        //    this.gangliaHosts = readHostsFromStorage();
-        //}
+     	synchronized (gangliaHosts) {
+            this.gangliaHosts = readHostsFromStorage();
+        }
         
         //storage for rules
         storageSource.createTable(RULES_TABLE_NAME, null);
         storageSource.setTablePrimaryKeyName(RULES_TABLE_NAME, COLUMN_RID);
-        //synchronized (hostRules) {
-        //    this.hostRules = readRulesFromStorage();
-        //}
+        synchronized (hostRules) {
+            this.hostRules = readRulesFromStorage();
+        }
         
 		
 		// One of the things we need to do is start our timing
@@ -286,13 +283,10 @@ public class HAND implements IHANDService, IFloodlightModule {
      * On Delete check if host exists in HAND, remove it from HAND.
      */
 	
-	public void addGangliaHost(IPv4 address){
-		//TODO add for ip address of host
+	public void addGangliaHost(HANDGangliaHost host, IPv4 ip){
+		//TODO add, check IP or Hostname. One had to match a RRD file.
+		// i.e check host.ip host.hostName against ganglia gmetad server for rrd match.
 		
-	}
-	
-	public void addGangliaHost(String hostName){
-		//TODO add for hostname of host
 	}
     
     //TODO
@@ -312,7 +306,7 @@ public class HAND implements IHANDService, IFloodlightModule {
     //TODO
     /**
      * Needs  a way to carry out the rules and a way to
-     * time synchronize GangliaHost.getPollingTime() with the system clock
+     * time synchronize HANDRule.getPollingTime() with the system clock
      * Hosts need to be polled every ^^time^^ that is set.
      * 
      * If the metrics add up the carry out the rule.
@@ -325,4 +319,31 @@ public class HAND implements IHANDService, IFloodlightModule {
      * The last 4 polls need to be stored.
      */
 
+	/**
+	 * Reads the policies from the storage and creates an
+     * ArrayList of GangliaHost's from them.
+	 * @return
+	 */
+	public ArrayList<HANDGangliaHost> readHostsFromStorage(){
+		ArrayList<HANDGangliaHost> list = new ArrayList<HANDGangliaHost>();
+		
+		
+		//TODO read gangliaHosts from storageSource;
+		
+		return list;
+	}
+	
+	/**
+	 * Reads the policies from the storage and creates a sorted 
+     * ArrayList of Rule's from them.
+	 * @return
+	 */
+	public ArrayList<HANDRule> readRulesFromStorage(){
+		ArrayList<HANDRule> list = new ArrayList<HANDRule>();
+		
+		
+		//TODO read rules from storageSource, sorted based on priority  of rule.
+		
+		return list;
+	}
 }

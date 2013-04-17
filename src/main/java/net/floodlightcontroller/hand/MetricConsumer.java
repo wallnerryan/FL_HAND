@@ -6,15 +6,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
-import java.util.logging.Logger;
-
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import net.floodlightcontroller.firewall.Firewall;
 import net.sourceforge.jrrd.*;
 
+/**
+ * 
+ * @author wallnerryan
+ *
+ */
+
 public class MetricConsumer {
-	Logger logger = Logger.getLogger("metricConsumer Logger");
+	 protected static Logger log = LoggerFactory.getLogger(MetricConsumer.class);
 	
 	///Default for ganglia
 	private String metricPath = "/var/lib/ganglia/rrds/";
@@ -193,13 +196,13 @@ public class MetricConsumer {
 				try{
 					avg = avg + entry.getValue();
 				}catch(IllegalStateException e){
-					logger.info(e.toString());
+					log.info(e.toString());
 				}
 			}
 			return (avg / vals.size());
 		}
 		else{
-			logger.info("Empty Data Set, Nothing to Average: Returning 0");
+			log.info("Empty Data Set, Nothing to Average: Returning 0");
 			return 0;
 		}
 	}
@@ -221,7 +224,7 @@ public class MetricConsumer {
 	}
 	
 	/**
-	 * Add data get functions and any other operatiuons
+	 * Add data get functions and any other operations
 	 * 
 	 * 
 	 * 

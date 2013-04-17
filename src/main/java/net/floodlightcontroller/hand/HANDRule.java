@@ -14,8 +14,8 @@ public class HANDRule implements Comparable<HANDRule>{
 	public long timeAdded;	//Date in seconds added
 	public long nextCheckTime;
 	public boolean active;
-	public int checkLimit;
-	public int currentCheck;
+	public int checkLimit;	//number of times it can be checked. (ttl?)
+	public int currentCheck; //current number checked
 	
 	public long hostAssoc;	//host ID of host who owns this rule
 	
@@ -58,6 +58,13 @@ public class HANDRule implements Comparable<HANDRule>{
 		
 	}
 	
+	/**
+	 * Return Rule's polling time.
+	 * used in rule time synchronization.
+	 */
+	public int getPollingTime(){
+		return this.pollingTime;
+	}
 	
 	
 	/**
@@ -97,9 +104,18 @@ public class HANDRule implements Comparable<HANDRule>{
 	public int hashCode(){
 		final int primeNum = 2521;
 		int result = super.hashCode();
-		
-		//TODO
-		
+		result = primeNum * result + priority;
+		result = primeNum * result + pollingTime;
+		result = primeNum * result + (int) nextCheckTime;
+	    result = primeNum * result + (active ? 1 : 0);
+		result = primeNum * result + checkLimit;
+		result = primeNum * result + currentCheck;
+		result = primeNum * result + (int) hostAssoc;
+		result = primeNum * result + metrics.hashCode();
+		result = primeNum * result + fRule.hashCode();
+	    result = primeNum * result + qos.hashCode();
+		result = primeNum * result + staticFlow.hashCode();
+		result = primeNum * result + action.hashCode();
 		return result;
 		
 	}
