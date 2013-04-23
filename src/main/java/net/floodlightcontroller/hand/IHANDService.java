@@ -2,6 +2,7 @@ package net.floodlightcontroller.hand;
 
 import java.util.ArrayList;
 import net.floodlightcontroller.core.module.IFloodlightService;
+import net.floodlightcontroller.packet.IPv4;
 
 /**
  * 
@@ -13,26 +14,50 @@ public interface IHANDService extends IFloodlightService {
 	
 	/**
 	 * 
-	 * @return
+	 * 
 	 */
 	public String getName();
     
     /**
      * 
-     * @return
+     * 
      */
     public Boolean isHANDEnabled();
     
     /**
      * 
-     * @param enabled
+     * 
      */
     public void enableHAND(boolean enabled);
     
     /**
      * 
-     * @return
+     * 
      */
     public ArrayList<String> getMessages();
+    
+    
+    /**
+     * 
+     * 
+     */
+    public ArrayList<HANDRule> getRules();
+    	
+    
+    /**
+     * 
+     * 
+     */
+    public ArrayList<HANDGangliaHost> getHosts();
+    
+    /**
+     * 
+     * 
+     * 
+     */
+    public void addGangliaHost(HANDGangliaHost host);
+    	
+    
+    
 
 }

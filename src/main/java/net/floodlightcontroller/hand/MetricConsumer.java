@@ -75,6 +75,30 @@ public class MetricConsumer {
 	}
 	
 	/**
+	 * Fetches cluster name from file system based on (@param String ip)
+	 * @param ip
+	 * @return
+	 */
+	public String fetchClusterByIP(String ip){
+		
+		//TODO
+		
+		return null;
+	}
+	
+	/**
+	 * Fetches cluster name from file system based on (@param String hostName)
+	 * @param hostName
+	 * @return
+	 */
+	public String fetchClusterByHostName(String hostName){
+		
+		//TODO
+		
+		return null;
+	}
+	
+	/**
 	 * Get the bytes inbound to the host
 	 * Uses the Start and End times to subtract from current TFE(Time from Epoch)
 	 * @param start

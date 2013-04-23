@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.PriorityBlockingQueue;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import net.floodlightcontroller.core.IFloodlightProviderService;
@@ -56,6 +58,7 @@ public class HAND implements IHANDService, IFloodlightModule {
     protected ArrayList<HANDRule> hostRules;
     protected ArrayList<HANDGangliaHost> gangliaHosts;
     protected ArrayList<String> messages;
+    protected PriorityBlockingQueue<HANDRule> ruleQueue; //used to prioritize rules
     
     /**
      * Table for hosts in storage source
@@ -137,8 +140,27 @@ public class HAND implements IHANDService, IFloodlightModule {
     	}
     }
     
+    /**
+     * @return
+     */
     public ArrayList<String> getMessages(){
     	return this.messages;
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public ArrayList<HANDRule> getRules(){
+    	return this.hostRules;
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public ArrayList<HANDGangliaHost> getHosts(){
+    	return this.gangliaHosts;
     }
     
     /**
@@ -234,11 +256,12 @@ public class HAND implements IHANDService, IFloodlightModule {
         storageSource = context.getServiceImpl(IStorageSourceService.class);
         restApi = context.getServiceImpl(IRestApiService.class);
         hostRules = new ArrayList<HANDRule>();
+        gangliaHosts = new ArrayList<HANDGangliaHost>();
         messages = new ArrayList<String>();
         logger = LoggerFactory.getLogger(HAND.class);
 
         // start disabled
-        enabled = true;
+        enabled = true; //true for testing 
 	}
 
 	@Override
@@ -283,7 +306,7 @@ public class HAND implements IHANDService, IFloodlightModule {
      * On Delete check if host exists in HAND, remove it from HAND.
      */
 	
-	public void addGangliaHost(HANDGangliaHost host, IPv4 ip){
+	public void addGangliaHost(HANDGangliaHost host){
 		//TODO add, check IP or Hostname. One had to match a RRD file.
 		// i.e check host.ip host.hostName against ganglia gmetad server for rrd match.
 		
