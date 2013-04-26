@@ -8,6 +8,9 @@ package net.floodlightcontroller.hand;
  * ***All host that join HAND must be running GMOND*** in order to work.
  **/
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,6 +18,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +27,6 @@ import net.floodlightcontroller.core.module.FloodlightModuleContext;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
 import net.floodlightcontroller.core.module.IFloodlightModule;
 import net.floodlightcontroller.core.module.IFloodlightService;
-import net.floodlightcontroller.packet.IPv4;
 import net.floodlightcontroller.restserver.IRestApiService;
 import net.floodlightcontroller.staticflowentry.IStaticFlowEntryPusherService;
 import net.floodlightcontroller.storage.IStorageSourceService;
@@ -59,6 +62,9 @@ public class HAND implements IHANDService, IFloodlightModule {
     protected ArrayList<HANDGangliaHost> gangliaHosts;
     protected ArrayList<String> messages;
     protected PriorityBlockingQueue<HANDRule> ruleQueue; //used to prioritize rules
+    
+    //Base path for RRDs
+    public static String gangliaBasePath;
     
     /**
      * Table for hosts in storage source
@@ -204,6 +210,7 @@ public class HAND implements IHANDService, IFloodlightModule {
     				 * 	1. current time needs to be checked against all rules
     				 * 	2. If a rule matches, take action
     				 * 	3. Queuing and concurrency methods need to be thought of here.
+    				 * 	4. For the above (3) use PriorrityBlockingQueue for action on matches
     				 */
     				
     			}
@@ -262,7 +269,12 @@ public class HAND implements IHANDService, IFloodlightModule {
 
         // start disabled
         enabled = true; //true for testing 
+        
+        //fetch config
+        getGangliaRRDLocation();
+        logger.info("RRD Location: {}", HAND.gangliaBasePath);
 	}
+
 
 	@Override
 	public void startUp(FloodlightModuleContext context) {
@@ -300,15 +312,22 @@ public class HAND implements IHANDService, IFloodlightModule {
 	 //TODO
     /**
      * Add/Remove host
-     * Must check floodlight topology service to see if host exists first.
+     * Must check Floodlight topology service to see if host exists first.
      * If not return a message.
      * 
      * On Delete check if host exists in HAND, remove it from HAND.
      */
 	
 	public void addGangliaHost(HANDGangliaHost host){
-		//TODO add, check IP or Hostname. One had to match a RRD file.
-		// i.e check host.ip host.hostName against ganglia gmetad server for rrd match.
+		/**
+		 * At this point, we already know RRD exists.
+		 * 1. Need to make sure HOST is seen by Floodlight
+		 * 2. If it does, add attachment point (First Hop, for Ganglia Host)
+		 * 3. Add it to HAND storageSource / ArrayList
+		 */
+		
+		
+		//TODO (Left 4/25/2013)
 		
 	}
     
@@ -368,5 +387,22 @@ public class HAND implements IHANDService, IFloodlightModule {
 		//TODO read rules from storageSource, sorted based on priority  of rule.
 		
 		return list;
+	}
+	
+	/**
+	 * Only needed by init.
+	 * Gets the rrd UNIX file locations for clusters and RRD's
+	 */
+	private void getGangliaRRDLocation() {
+		Properties props = new Properties();
+		try {
+			props.load(new FileInputStream("/src/main/resources/floodlightdefault.properties"));
+			gangliaBasePath = props.getProperty("net.floodlightcontroller.hand.GangliaBasePath");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 	}
 }

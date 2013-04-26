@@ -19,8 +19,16 @@ import net.sourceforge.jrrd.*;
 public class MetricConsumer {
 	 protected static Logger log = LoggerFactory.getLogger(MetricConsumer.class);
 	
-	///Default for ganglia
-	private String metricPath = "/var/lib/ganglia/rrds/";
+	
+	 
+	/**
+	 * Specified in 
+	 * 
+	 * (net.floodlightcontroller.hand.GangliaBasePath) 
+	 * 
+	 * in Ganglia Controller Properties
+	 */
+	protected String metricPath = HAND.gangliaBasePath;
 	
 	//Specific to your RRDTool fetch request
 	Date startDate;
@@ -231,7 +239,20 @@ public class MetricConsumer {
 		}
 	}
 	
+	/**
+	 * Kind of shotty, need to fix :)
+	 * 
+	 * Returns the last value in the DataChunk.
+	 * Useful for last known measurement.
+	 * @param c
+	 * @return
+	 */
 	public double getLastValue(DataChunk c){
+		
+		/**
+		 * Unchecked because no way of know values match DATE of DOUBLE.
+		 * Should really verify them all before added them to MAP.
+		 */
 		
 		@SuppressWarnings("unchecked") //temporary, should cast Date and Double to Map types
 		   							   //to comply with Java generics

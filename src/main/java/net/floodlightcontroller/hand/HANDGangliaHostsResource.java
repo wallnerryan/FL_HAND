@@ -1,5 +1,6 @@
 package net.floodlightcontroller.hand;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -75,7 +76,7 @@ public class HANDGangliaHostsResource extends ServerResource {
 				}
 				if(host.cluster == null){
 					logger.info("Fetching Cluster Information...");
-					if(existsInCluster(host)){
+					if(existsInAnyCluster(host)){
 						//Send to HAND Module for addition.
 						hand.addGangliaHost(host);
 						status = "Success, adding host to HAND.";
@@ -84,7 +85,9 @@ public class HANDGangliaHostsResource extends ServerResource {
 					}
 				}
 				/**
-				 * MAC, Cluster, and First Hop Switch will be added later b/c
+				 * Cluster will be add by existsInAnyCluster() if host RRD is found.
+				 * 
+				 * MAC,and First Hop Switch will be added later b/c
 				 * Floodlight will already has this info if not provided.
 				 */
 			}
@@ -201,14 +204,46 @@ public class HANDGangliaHostsResource extends ServerResource {
 	
 	/**
 	 * Checks to make sure a cluster exists for this Host
+	 * By searching the RRD directory given in properties
+	 * and making sure the host RRD exists within a cluster directory.
 	 * @param host
 	 * @return
 	 */
-	public static boolean existsInCluster(HANDGangliaHost host){
+	public static boolean existsInAnyCluster(HANDGangliaHost host){
+		//if found
+		boolean found = false;
 		
-		//TODO
+		//Get the consumer to get basepath.
+		MetricConsumer aConsumer = new MetricConsumer();
+		String dir = aConsumer.metricPath;
 		
-		return false;
+		File containingPath = new File(dir);
+		logger.info("Searching clusters in: {}", containingPath.getPath()); //debug
+		for( File child : containingPath.listFiles()){
+			//check if directory, clusters are listed as directories in Unix File Systems
+			if(child.isDirectory()){
+				logger.info("Checking Cluster: {}", child.toString()); //debug
+				for(File rrd : child.listFiles()){
+					logger.debug("Comparing : {}", rrd.toString());
+					if(rrd.toString().toLowerCase().contains(host.hostName.toLowerCase())){
+						found = true;
+					} else {
+						new String();
+						if(rrd.toString().toLowerCase().contains(String.valueOf(host.
+								ipAddress).toLowerCase())){
+							found = true;
+							//set the host's cluster if found
+							//this is the current directory 
+							//being searched.
+							host.cluster = child.toString();
+						}
+					}
+				}
+			}
+			
+		}
+		
+		return found;
 	}
 
 }

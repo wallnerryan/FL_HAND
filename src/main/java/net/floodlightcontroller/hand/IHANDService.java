@@ -2,7 +2,6 @@ package net.floodlightcontroller.hand;
 
 import java.util.ArrayList;
 import net.floodlightcontroller.core.module.IFloodlightService;
-import net.floodlightcontroller.packet.IPv4;
 
 /**
  * 
