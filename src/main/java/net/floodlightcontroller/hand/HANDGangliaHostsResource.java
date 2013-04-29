@@ -172,8 +172,19 @@ public class HANDGangliaHostsResource extends ServerResource {
     			else if(name == "cluster"){
     				host.cluster = jsonText;
     			}
-    			else if(name == "first_hop"){
-    				host.firstHop = Long.parseLong(jsonText);
+    			//adds a list of SwitchDPIDs
+    			//ex: {"first_hops":"123456789,987654321"}
+    			else if(name == "first_hops"){
+    				if(jsonText.contains(",")){
+    					String[] hops = jsonText.split(",");
+    					for(String s : hops){
+    						host.firstHops.add(Long.valueOf(s));
+    					}
+    				}else{
+    					//only one first hop
+    					//ex: {"first_hops":"123456789"}
+    					host.firstHops.add(Long.valueOf(jsonText));
+    				}
     			}
     			
     		}catch(JsonParseException e){
