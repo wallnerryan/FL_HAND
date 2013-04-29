@@ -1,6 +1,7 @@
 package net.floodlightcontroller.hand;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,7 +18,7 @@ import net.sourceforge.jrrd.*;
  */
 
 public class MetricConsumer {
-	 protected static Logger log = LoggerFactory.getLogger(MetricConsumer.class);
+	 protected static Logger logger = LoggerFactory.getLogger(MetricConsumer.class);
 	
 	
 	 
@@ -82,28 +83,82 @@ public class MetricConsumer {
 		return seconds;
 	}
 	
+
 	/**
-	 * Fetches cluster name from file system based on (@param String ip)
+	 *  Fetches cluster name from file system based on (@param String ip)
 	 * @param ip
 	 * @return
+	 * @throws Exception
 	 */
-	public String fetchClusterByIP(String ip){
+	public String fetchClusterByIP(String ip) throws ClusterNotFoundException{
 		
-		//TODO
+		String cluster = null;
 		
-		return null;
-	}
+		String dir = this.metricPath;
+				
+		File containingPath = new File(dir);
+		logger.info("Searching for clusters in: {}", containingPath.getPath()); //debug
+		for( File child : containingPath.listFiles()){
+			//check if directory, clusters are listed as directories in Unix File Systems
+			if(child.isDirectory()){
+				logger.info("Checking Cluster: {}", child.toString()); //debug
+				for(File rrd : child.listFiles()){
+					logger.debug("Comparing : {}", rrd.toString());
+					if(rrd.toString().contains(ip)){
+						cluster = child.toString();
+						break;
+						} 
+						
+					}
+				}
+			}
+		
+		if(cluster != null){
+			return cluster;
+		}else{
+			throw new ClusterNotFoundException("ClusterNotFoundException");
+		}
+					
+		}
+				
+
 	
 	/**
 	 * Fetches cluster name from file system based on (@param String hostName)
+	 * hostName can be HOSTNAME or HOSTNAME+DOMAIN
 	 * @param hostName
 	 * @return
+	 * @throws Exception
 	 */
-	public String fetchClusterByHostName(String hostName){
+	public String fetchClusterByHostName(String hostName) throws ClusterNotFoundException{
 		
-		//TODO
+		String cluster = null;
 		
-		return null;
+		String dir = this.metricPath;
+				
+		File containingPath = new File(dir);
+		logger.info("Searching for clusters in: {}", containingPath.getPath()); //debug
+		for( File child : containingPath.listFiles()){
+			//check if directory, clusters are listed as directories in Unix File Systems
+			if(child.isDirectory()){
+				logger.info("Checking Cluster: {}", child.toString()); //debug
+				for(File rrd : child.listFiles()){
+					logger.debug("Comparing : {}", rrd.toString());
+					//Looks for "hostname" in any "hostname.rrd" file
+					if(rrd.toString().toLowerCase().contains(hostName.toLowerCase())){
+						cluster = child.toString();
+						break;
+						} 
+						
+					}
+				}
+			}
+		
+		if(cluster != null){
+			return cluster;
+		}else{
+			throw new ClusterNotFoundException("ClusterNotFoundException");
+		}
 	}
 	
 	/**
@@ -228,13 +283,13 @@ public class MetricConsumer {
 				try{
 					avg = avg + entry.getValue();
 				}catch(IllegalStateException e){
-					log.info(e.toString());
+					logger.info(e.toString());
 				}
 			}
 			return (avg / vals.size());
 		}
 		else{
-			log.info("Empty Data Set, Nothing to Average: Returning 0");
+			logger.info("Empty Data Set, Nothing to Average: Returning 0");
 			return 0;
 		}
 	}
@@ -254,13 +309,13 @@ public class MetricConsumer {
 		 * Should really verify them all before added them to MAP.
 		 */
 		
-		@SuppressWarnings("unchecked") //temporary, should cast Date and Double to Map types
-		   							   //to comply with Java generics
+		@SuppressWarnings("unchecked") /**temporary, should cast Date and Double to Map types
+		   							      to comply with Java generic**/
 		Map<Date, Double> vals = c.toMap(0);
 		Collection<Double> nums = vals.values();
 		
-		@SuppressWarnings({ "rawtypes", "unchecked" }) //temporary, should cast Date and Double to Map types
-		   											   //to comply with Java generics
+		@SuppressWarnings({ "rawtypes", "unchecked" }) /**temporary, should cast Date and Double to Map types
+		      											  to comply with Java generic**/
 		ArrayList num_list = new ArrayList(nums);
 		
 		Double last;
@@ -270,8 +325,10 @@ public class MetricConsumer {
 	
 	/**
 	 * Add data get functions and any other operations
+	 * The above is pretty incomplete function-list of the
+	 * metrics and types that you can get from RRDs
 	 * 
-	 * 
+	 * TODO
 	 * 
 	 */
 	

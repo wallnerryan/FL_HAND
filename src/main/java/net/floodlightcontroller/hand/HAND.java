@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -30,6 +31,11 @@ import net.floodlightcontroller.core.module.IFloodlightService;
 import net.floodlightcontroller.restserver.IRestApiService;
 import net.floodlightcontroller.staticflowentry.IStaticFlowEntryPusherService;
 import net.floodlightcontroller.storage.IStorageSourceService;
+import net.floodlightcontroller.util.MACAddress;
+import net.floodlightcontroller.devicemanager.IDevice;
+import net.floodlightcontroller.devicemanager.IDeviceService;
+import net.floodlightcontroller.devicemanager.SwitchPort;
+
 /**
 import net.floodlightcontroller.topology.ITopologyListener;
 import net.floodlightcontroller.topology.ITopologyService;
@@ -57,6 +63,7 @@ public class HAND implements IHANDService, IFloodlightModule {
     protected IStorageSourceService storageSource;
     protected IRestApiService restApi;
     protected static Logger logger;
+    protected IDeviceService devices;
     
     protected ArrayList<HANDRule> hostRules;
     protected ArrayList<HANDGangliaHost> gangliaHosts;
@@ -75,14 +82,14 @@ public class HAND implements IHANDService, IFloodlightModule {
     public static final String COLUMN_NAME = "hostname";
     public static final String COLUMN_IPADD = "ip_address";
     public static final String COLUMN_MACADD = "mac_address";
-    public static final String COLUMN_FIRSTHOP = "first_hop_switch";
+    public static final String COLUMN_FIRSTHOPS = "first_hop_switches";
     public static String HostColumnNames[] = {
     	COLUMN_HID,
     	COLUMN_CLUSTER,
     	COLUMN_NAME,
     	COLUMN_IPADD,
     	COLUMN_MACADD,
-    	COLUMN_FIRSTHOP
+    	COLUMN_FIRSTHOPS
     	};
     
     /**
@@ -262,6 +269,7 @@ public class HAND implements IHANDService, IFloodlightModule {
                 .getServiceImpl(IFloodlightProviderService.class);
         storageSource = context.getServiceImpl(IStorageSourceService.class);
         restApi = context.getServiceImpl(IRestApiService.class);
+        devices = context.getServiceImpl(IDeviceService.class);
         hostRules = new ArrayList<HANDRule>();
         gangliaHosts = new ArrayList<HANDGangliaHost>();
         messages = new ArrayList<String>();
@@ -321,14 +329,74 @@ public class HAND implements IHANDService, IFloodlightModule {
 	public void addGangliaHost(HANDGangliaHost host){
 		/**
 		 * At this point, we already know RRD exists.
-		 * 1. Need to make sure HOST is seen by Floodlight
+		 * 1. Need to make sure HOST is seen by Floodlight (CHECK! DONE! COMPLETE 4/28/2013)
 		 * 2. If it does, add attachment point (First Hop, for Ganglia Host)
 		 * 3. Add it to HAND storageSource / ArrayList
 		 */
 		
+		if(hostSeenByFloodlight(host)){
+			//TODO (Left 4/29/2013)
+			
+		}
+		else{
+			logger.error("Ganglia host not added.Reason:"+
+						 "HAND Could not detect that Floodlight has seen this host before,"+
+						 "Please check to make sure host in visible to the controller.");
+		}
 		
-		//TODO (Left 4/25/2013)
 		
+	}
+	/**
+	 * This functions takes in a user defined host and
+	 * makes sure that Floodlight has seen the host. If
+	 * Floodliight cannot see the host, the host information
+	 * is useless to the SDN network and the controller will
+	 * not be able to control the flows to / from the host.
+	 * 
+	 * The method also adds vital information about the host
+	 * if Floodlight has seen it in its networks before.
+	 * 
+	 * @param host
+	 * @return boolean
+	 */
+	
+	public boolean hostSeenByFloodlight(HANDGangliaHost host){
+		boolean isSeen = false;
+		Iterator<? extends IDevice> hosts;
+		if(host.macAddress != null){
+			hosts = devices.queryDevices(host.macAddress.toLong(), null, host.ipAddress,null, null);
+		}
+		else{
+			hosts = devices.queryDevices(null, null, host.ipAddress, null, null);
+		}
+		
+		while(hosts.hasNext()){
+			IDevice device = hosts.next();
+			Integer[] deviceAddresses = device.getIPv4Addresses();
+			for(Integer address : deviceAddresses){
+				if(address == host.ipAddress){
+					isSeen = true;
+					/**
+					 * some of the host information is optional,
+					 * if the user doesn't enter it, Floodlight
+					 * knows about it.
+					 */
+					if(host.firstHops == null){
+						ArrayList<Long> switches = new ArrayList<Long>();
+						for(SwitchPort p : device.getAttachmentPoints()){
+							switches.add(p.getSwitchDPID());
+						}
+						host.firstHops = switches;
+					}
+					if(host.macAddress == null){
+						host.macAddress = MACAddress.valueOf(device.getMACAddress());
+					}
+					break;
+				}
+			}
+		}
+		//return whether Floodlight has seen the host.
+		return isSeen;
 	}
     
     //TODO

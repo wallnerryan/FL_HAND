@@ -70,9 +70,9 @@ public class HANDGangliaHostsResource extends ServerResource {
 			if(hand.isHANDEnabled()){
 				
 				/**Required Field Checks**/
-				//hostname or ip is required. b/c Ganglia stores RRD's by them.
-				if(host.hostName == null && host.ipAddress == 0){
-					status = "Must provide either a Hostname or IP Address";
+				//hostname and ip is required. b/c Ganglia stores RRD's by them.
+				if(host.hostName == null || host.ipAddress == 0){
+					status = "Must provide Hostname and IP Address";
 				}
 				if(host.cluster == null){
 					logger.info("Fetching Cluster Information...");
@@ -163,6 +163,9 @@ public class HANDGangliaHostsResource extends ServerResource {
     				host.ipAddress = IPv4.toIPv4Address(jsonText);
     				
     			}
+    			else if(name == "domain"){
+    				host.domain = jsonText;
+    			}
     			else if(name == "mac_address"){
     				host.macAddress = MACAddress.valueOf(jsonText);
     			}
@@ -217,16 +220,28 @@ public class HANDGangliaHostsResource extends ServerResource {
 		MetricConsumer aConsumer = new MetricConsumer();
 		String dir = aConsumer.metricPath;
 		
+		String fqdn;
+		if(host.domain.equals(null)){
+			host.domain = "";
+			fqdn = host.hostName+host.domain;
+		}else{
+			fqdn = host.hostName+"."+host.domain;
+		}
+		
 		File containingPath = new File(dir);
-		logger.info("Searching clusters in: {}", containingPath.getPath()); //debug
+		logger.info("Searching for clusters in: {}", containingPath.getPath()); //debug
 		for( File child : containingPath.listFiles()){
 			//check if directory, clusters are listed as directories in Unix File Systems
 			if(child.isDirectory()){
 				logger.info("Checking Cluster: {}", child.toString()); //debug
 				for(File rrd : child.listFiles()){
 					logger.debug("Comparing : {}", rrd.toString());
-					if(rrd.toString().toLowerCase().contains(host.hostName.toLowerCase())){
+					if(rrd.toString().toLowerCase().contains(fqdn.toLowerCase())){
 						found = true;
+						//this is the current directory 
+						//being searched.
+						host.cluster = child.toString();
+						break;
 					} else {
 						new String();
 						if(rrd.toString().toLowerCase().contains(String.valueOf(host.
@@ -236,6 +251,7 @@ public class HANDGangliaHostsResource extends ServerResource {
 							//this is the current directory 
 							//being searched.
 							host.cluster = child.toString();
+							break;
 						}
 					}
 				}
