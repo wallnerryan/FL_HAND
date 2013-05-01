@@ -1,13 +1,5 @@
 package net.floodlightcontroller.hand;
 
-/**
- * HAND: Host Aware Network Decisions
- * "network decisions based on Ganglia metrics and clusters"
- * @author ryan wallner
- * 
- * ***All host that join HAND must be running GMOND*** in order to work.
- **/
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -37,24 +29,14 @@ import net.floodlightcontroller.devicemanager.IDeviceService;
 import net.floodlightcontroller.devicemanager.SwitchPort;
 
 /**
-import net.floodlightcontroller.topology.ITopologyListener;
-import net.floodlightcontroller.topology.ITopologyService;
-import net.floodlightcontroller.topology.NodePortTuple;
-import net.floodlightcontroller.devicemanager.IDevice;
-import net.floodlightcontroller.devicemanager.IDeviceListener;
-import net.floodlightcontroller.devicemanager.IDeviceService;
-import net.floodlightcontroller.devicemanager.IEntityClass;
-import net.floodlightcontroller.firewall.Firewall;
-import net.floodlightcontroller.firewall.FirewallRule;
-import net.floodlightcontroller.firewall.FirewallWebRoutable;
-import net.floodlightcontroller.linkdiscovery.ILinkDiscovery.LDUpdate;
-**/
-
-/**
+ * HAND: Host Aware Network Decisions
+ * "NetworkAware Network Decisions based on Ganglia metrics and clusters"
+ * @author ryan wallner
  * 
- * @author wallnerryan
- *
- */
+ * ***All host that join HAND must be running GMOND*** in order to work.
+ **/
+
+
 public class HAND implements IHANDService, IFloodlightModule {
 	
 	// services needed
@@ -83,13 +65,15 @@ public class HAND implements IHANDService, IFloodlightModule {
     public static final String COLUMN_IPADD = "ip_address";
     public static final String COLUMN_MACADD = "mac_address";
     public static final String COLUMN_FIRSTHOPS = "first_hop_switches";
+    public static final String COLUMN_TIMEADDED = "time_added";
     public static String HostColumnNames[] = {
     	COLUMN_HID,
     	COLUMN_CLUSTER,
     	COLUMN_NAME,
     	COLUMN_IPADD,
     	COLUMN_MACADD,
-    	COLUMN_FIRSTHOPS
+    	COLUMN_FIRSTHOPS,
+    	COLUMN_TIMEADDED
     	};
     
     /**
@@ -259,6 +243,7 @@ public class HAND implements IHANDService, IFloodlightModule {
 		l.add(IStorageSourceService.class);
         l.add(IRestApiService.class);
         l.add(IStaticFlowEntryPusherService.class);
+        l.add(IDeviceService.class);
 		return l;
 	}
 
@@ -276,7 +261,7 @@ public class HAND implements IHANDService, IFloodlightModule {
         logger = LoggerFactory.getLogger(HAND.class);
 
         // start disabled
-        enabled = true; //true for testing 
+        enabled = false; //true for testing 
         
         //fetch config
         getGangliaRRDLocation();
@@ -319,24 +304,67 @@ public class HAND implements IHANDService, IFloodlightModule {
     
 	 //TODO
     /**
-     * Add/Remove host
-     * Must check Floodlight topology service to see if host exists first.
-     * If not return a message.
      * 
-     * On Delete check if host exists in HAND, remove it from HAND.
+     * Add host (DONE!) 5/1/2013
+     * 
+     * Remove host //TODO
+     * 
      */
 	
+	
+	/**
+	 * Adds a host to the controller in an ordered manner,
+	 * hosts are ordered High --> Low by time they were added.
+	 * @param host
+	 */
 	public void addGangliaHost(HANDGangliaHost host){
-		/**
-		 * At this point, we already know RRD exists.
-		 * 1. Need to make sure HOST is seen by Floodlight (CHECK! DONE! COMPLETE 4/28/2013)
-		 * 2. If it does, add attachment point (First Hop, for Ganglia Host)
-		 * 3. Add it to HAND storageSource / ArrayList
-		 */
-		
 		if(hostSeenByFloodlight(host)){
 			//TODO (Left 4/29/2013)
+			logger.debug("All checks complete, adding Ganglia Host to Controller");
 			
+			//Generate unique identifier.
+			host.hostId = host.genUniqueId();
+			
+			int pos = 0;
+			int h = 0;
+			for(h = 0; h < this.gangliaHosts.size(); h ++){
+				if(this.gangliaHosts.isEmpty()){
+					break; //just add it.
+				}
+				//Add High to Low. (newer hosts are checked first)
+				if(this.gangliaHosts.get(h).timeAdded <= host.timeAdded){
+					pos = h;
+					break; //want to add here. H -> L
+					
+				}
+			}
+			if(pos <= this.gangliaHosts.size()){
+				this.gangliaHosts.add(pos, host);
+			}
+			else{
+				this.gangliaHosts.add(host);
+			}
+			
+			/**
+			 * Add the host to the storageSource.
+			 * COLUMN_HID,
+    		 * COLUMN_CLUSTER,
+    		 * COLUMN_NAME,
+    		 * COLUMN_IPADD,
+    		 * COLUMN_MACADD,
+    		 * COLUMN_FIRSTHOPS,
+    		 * COLUMN_TIMEADDED
+			 */
+			Map<String, Object> hostEntry = new HashMap<String, Object>();
+			hostEntry.put(COLUMN_HID, Long.toString(host.hostId));
+			hostEntry.put(COLUMN_CLUSTER, host.cluster);
+			hostEntry.put(COLUMN_NAME, host.hostName);
+			hostEntry.put(COLUMN_IPADD, Integer.toString(host.ipAddress));
+			hostEntry.put(COLUMN_MACADD, host.macAddress.toString());
+			hostEntry.put(COLUMN_FIRSTHOPS, host.firstHops.toString());
+			hostEntry.put(COLUMN_TIMEADDED, Long.toString(host.timeAdded));
+			storageSource.insertRow(HOSTS_TABLE_NAME, hostEntry);
+		
 		}
 		else{
 			logger.error("Ganglia host not added.Reason:"+
@@ -347,9 +375,9 @@ public class HAND implements IHANDService, IFloodlightModule {
 		
 	}
 	/**
-	 * This functions takes in a user defined host and
+	 * This method takes in a user defined host and
 	 * makes sure that Floodlight has seen the host. If
-	 * Floodliight cannot see the host, the host information
+	 * Floodlight cannot see the host, the host information
 	 * is useless to the SDN network and the controller will
 	 * not be able to control the flows to / from the host.
 	 * 

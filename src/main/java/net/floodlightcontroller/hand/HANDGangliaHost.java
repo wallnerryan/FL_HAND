@@ -21,6 +21,7 @@ public class HANDGangliaHost implements Comparable<HANDGangliaHost>{
 	public int ipAddress; //can use IPv4.toIPv4Address(String add) (Required)
 	public MACAddress macAddress; //can use MACAddress.valueOf(String MACadd)
 	public ArrayList<Long> firstHops;	//list of Swutch IDs for first hop OF switch.
+	public long timeAdded;
 	
 	public HANDGangliaHost(){
 		
@@ -31,6 +32,7 @@ public class HANDGangliaHost implements Comparable<HANDGangliaHost>{
 		this.ipAddress = 0;
 		this.macAddress = null;
 		this.firstHops = new ArrayList<Long>();
+		this.timeAdded = this.getCurrentTime();
 	}
 	
 	/**
@@ -44,6 +46,16 @@ public class HANDGangliaHost implements Comparable<HANDGangliaHost>{
 			uid = uid * 1553;
 		}
 		return uid;
+	}
+	
+	/**
+	 * Get current time in seconds since Epoch.
+	 * @return
+	 */
+	public long getCurrentTime(){
+		long time = System.currentTimeMillis() / 1000l;
+		return time;
+				
 	}
 	
 	/**
