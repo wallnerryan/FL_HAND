@@ -96,14 +96,23 @@ public class MetricConsumer {
 				
 		File containingPath = new File(dir);
 		logger.info("Searching for clusters in: {}", containingPath.getPath()); //debug
+		
 		for( File child : containingPath.listFiles()){
 			//check if directory, clusters are listed as directories in Unix File Systems
-			if(child.isDirectory()){
-				logger.info("Checking Cluster: {}", child.toString()); //debug
+			
+			if(child.isDirectory() && !(child.toString().contains("unspecified")) 
+					&& !(child.toString().contains("__SummaryInfo__")) ){
+				String[] strDirs = child.toString().split("/");
+				String curDir = strDirs[strDirs.length-1];
+				logger.info("Checking Cluster: {}", curDir); //debug
+				
 				for(File rrd : child.listFiles()){
-					logger.debug("Comparing : {}", rrd.toString());
-					if(rrd.toString().contains(ip)){
-						cluster = child.toString();
+					String[] strRRDs = rrd.toString().split("/");
+					String compareRRD = strRRDs[strRRDs.length-1];
+					logger.debug("Comparing : {}", compareRRD);
+					
+					if(compareRRD.contains(ip)){
+						cluster = curDir;
 						break;
 						} 
 						
@@ -136,15 +145,24 @@ public class MetricConsumer {
 				
 		File containingPath = new File(dir);
 		logger.info("Searching for clusters in: {}", containingPath.getPath()); //debug
+		
 		for( File child : containingPath.listFiles()){
+			
 			//check if directory, clusters are listed as directories in Unix File Systems
-			if(child.isDirectory()){
-				logger.info("Checking Cluster: {}", child.toString()); //debug
+			if(child.isDirectory() && !(child.toString().contains("unspecified")) 
+					&& !(child.toString().contains("__SummaryInfo__")) ){
+				String[] strDirs = child.toString().split("/");
+				String curDir = strDirs[strDirs.length-1];
+				logger.info("Checking Cluster: {}", curDir); //debug
+				
 				for(File rrd : child.listFiles()){
-					logger.debug("Comparing : {}", rrd.toString());
+					String[] strRRDs = rrd.toString().split("/");
+					String compareRRD = strRRDs[strRRDs.length-1];
+					logger.debug("Comparing : {}", compareRRD);
 					//Looks for "hostname" in any "hostname.rrd" file
-					if(rrd.toString().toLowerCase().contains(hostName.toLowerCase())){
-						cluster = child.toString();
+					
+					if(compareRRD.toLowerCase().contains(hostName.toLowerCase())){
+						cluster = curDir;
 						break;
 						} 
 						

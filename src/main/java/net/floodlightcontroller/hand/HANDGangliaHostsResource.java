@@ -247,11 +247,14 @@ public class HANDGangliaHostsResource extends ServerResource {
 		logger.info("Searching for clusters in: {}", containingPath.getPath()); //debug
 		for( File child : containingPath.listFiles()){
 			//check if directory, clusters are listed as directories in Unix File Systems
-			if(child.isDirectory()){
+			if(child.isDirectory() && !(child.toString().contains("unspecified")) 
+					&& !(child.toString().contains("__SummaryInfo__")) ){
 				logger.info("Checking Cluster: {}", child.toString()); //debug
 				for(File rrd : child.listFiles()){
-					logger.debug("Comparing : {}", rrd.toString());
-					if(rrd.toString().toLowerCase().contains(fqdn.toLowerCase())){
+					String[] strRRDs = rrd.toString().split("/");
+					String compareRRD = strRRDs[strRRDs.length-1];
+					logger.debug("Comparing : {}", compareRRD );
+					if(compareRRD.contains(fqdn.toLowerCase())){
 						found = true;
 						//this is the current directory 
 						//being searched.
@@ -259,8 +262,8 @@ public class HANDGangliaHostsResource extends ServerResource {
 						break;
 					} else {
 						new String();
-						if(rrd.toString().toLowerCase().contains(String.valueOf(host.
-								ipAddress).toLowerCase())){
+						if(compareRRD.contains(IPv4.fromIPv4Address(
+								host.ipAddress).toLowerCase())){
 							found = true;
 							//set the host's cluster if found
 							//this is the current directory 
