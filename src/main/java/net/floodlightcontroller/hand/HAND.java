@@ -304,11 +304,9 @@ public class HAND implements IHANDService, IFloodlightModule {
     
 	 //TODO
     /**
-     * 
      * Add host (DONE!) 5/1/2013
      * 
      * Remove host //TODO
-     * 
      */
 	
 	
@@ -319,7 +317,6 @@ public class HAND implements IHANDService, IFloodlightModule {
 	 */
 	public void addGangliaHost(HANDGangliaHost host){
 		if(hostSeenByFloodlight(host)){
-			//TODO (Left 4/29/2013)
 			logger.debug("All checks complete, adding Ganglia Host to Controller");
 			
 			//Generate unique identifier.
@@ -367,7 +364,7 @@ public class HAND implements IHANDService, IFloodlightModule {
 		
 		}
 		else{
-			logger.error("Ganglia host not added.Reason:"+
+			logger.error("Ganglia host not added. Reason:"+
 						 "HAND Could not detect that Floodlight has seen this host before,"+
 						 "Please check to make sure host in visible to the controller.");
 		}
