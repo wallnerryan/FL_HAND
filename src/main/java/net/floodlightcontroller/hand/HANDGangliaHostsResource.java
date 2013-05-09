@@ -253,7 +253,8 @@ public class HANDGangliaHostsResource extends ServerResource {
 				for(File rrd : child.listFiles()){
 					String[] strRRDs = rrd.toString().split("/");
 					String compareRRD = strRRDs[strRRDs.length-1];
-					logger.debug("Comparing : {}", compareRRD );
+					logger.debug("Comparing : "+fqdn+" or "+IPv4.fromIPv4Address(
+							host.ipAddress).toLowerCase()+ "  to {}", compareRRD ); //DEBUG
 					if(compareRRD.contains(fqdn.toLowerCase())){
 						found = true;
 						//this is the current directory 
