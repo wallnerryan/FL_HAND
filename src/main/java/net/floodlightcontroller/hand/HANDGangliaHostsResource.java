@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import net.floodlightcontroller.packet.IPv4;
-import net.floodlightcontroller.util.MACAddress;
-
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 import org.restlet.resource.Delete;

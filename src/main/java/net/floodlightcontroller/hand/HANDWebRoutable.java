@@ -35,7 +35,7 @@ public class HANDWebRoutable implements RestletRoutable {
          * Shows the hosts that are currently polled, or tries to add
          *a host with MAC/IP pairing
          **/
-        router.attach("/host/json", HANDGangliaHostsResource.class);
+        router.attach("/hosts/json", HANDGangliaHostsResource.class);
         return router;
     }
 

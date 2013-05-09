@@ -8,6 +8,7 @@ import net.floodlightcontroller.qos.QoSPolicy;
 public class HANDRule implements Comparable<HANDRule>{
 	
 	public long ruleId;
+	public String name;
 	public int priority = 0;
 	
 	public int pollingTime;	// 1,5,10,30,60 ... in seconds
@@ -41,6 +42,7 @@ public class HANDRule implements Comparable<HANDRule>{
 	
 	public HANDRule(){
 		this.ruleId = 0;
+		this.name = null;
 		this.priority = 0;
 		this.pollingTime = 0;
 		this.timeAdded = this.getCurrentTime();
@@ -90,6 +92,26 @@ public class HANDRule implements Comparable<HANDRule>{
 		return uid;
 	}
 
+	/**
+	 * Compare to another Rule
+	 * @param rule
+	 * @return
+	 */
+	public boolean isSameAs(HANDRule rule) {
+		boolean isSame;
+		if (this.name == rule.name
+				&& this.timeAdded == rule.timeAdded){
+			isSame = true;
+		}else if( this.ruleId == rule.ruleId ||
+				rule.equals(this)){
+			isSame = true;
+		}else{
+			isSame=false;
+			}
+		
+		return isSame;
+	}
+	
 	@Override
 	public int compareTo(HANDRule rule) {
 		// TODO Auto-generated method stub

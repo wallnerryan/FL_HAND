@@ -20,8 +20,6 @@ import net.sourceforge.jrrd.*;
 public class MetricConsumer {
 	 protected static Logger logger = LoggerFactory.getLogger(MetricConsumer.class);
 	
-	
-	 
 	/**
 	 * Specified in 
 	 * 
@@ -179,7 +177,7 @@ public class MetricConsumer {
 		// Initialize the database and chunk to return
 		RRDatabase net;
 		DataChunk chunk;
-		net = new RRDatabase(metricPath+cluster+"/"+host+"bytes_in.rrd");
+		net = new RRDatabase(metricPath+cluster+"/"+host+MetricConsumerType.MetricType.BYTES_IN);
 		chunk = net.getData(ConsolidationFunctionType.AVERAGE,
 				(this.getTime() - start),
 				(this.getTime() - end), step);
@@ -205,7 +203,7 @@ public class MetricConsumer {
 		// Initialize the database and chunk to return
 		RRDatabase net;
 		DataChunk chunk;
-		net = new RRDatabase(metricPath+cluster+"/"+host+"bytes_out.rrd");
+		net = new RRDatabase(metricPath+cluster+"/"+host+MetricConsumerType.MetricType.BYTES_OUT);
 		chunk = net.getData(ConsolidationFunctionType.AVERAGE,
 				(this.getTime() - start),
 				(this.getTime() - end), step);
@@ -231,7 +229,7 @@ public class MetricConsumer {
 		// Initialize the database and chunk to return
 		RRDatabase net;
 		DataChunk chunk;
-		net = new RRDatabase(metricPath+cluster+"/"+host+"mem_free.rrd");
+		net = new RRDatabase(metricPath+cluster+"/"+host+MetricConsumerType.MetricType.MEMORY_FREE);
 		chunk = net.getData(ConsolidationFunctionType.AVERAGE,
 				(this.getTime() - start),
 				(this.getTime() - end), step);
@@ -258,7 +256,7 @@ public class MetricConsumer {
 		// Initialize the database and chunk to return
 		RRDatabase net;
 		DataChunk chunk;
-		net = new RRDatabase(metricPath+cluster+"/"+host+"mem_free.rrd");
+		net = new RRDatabase(metricPath+cluster+"/"+host+MetricConsumerType.MetricType.DISK_FREE);
 		chunk = net.getData(ConsolidationFunctionType.AVERAGE,
 				(this.getTime() - start),
 				(this.getTime() - end), step);

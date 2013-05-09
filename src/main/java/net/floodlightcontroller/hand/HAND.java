@@ -80,6 +80,7 @@ public class HAND implements IHANDService, IFloodlightModule {
      */
     public static final String RULES_TABLE_NAME = "hand_rules";
     public static final String COLUMN_RID = "ruleid";
+    public static final String COLUMN_RNAME = "rule_name";
     public static final String COLUMN_PRIOR = "priority";
     public static final String COLUMN_POLLTIME = "polling_time";
     public static final String COLUMN_TIMEADD = "time_added";
@@ -95,6 +96,7 @@ public class HAND implements IHANDService, IFloodlightModule {
     public static final String COLUMN_ACTION = "action";
     public static String RuleColumnNames[] = {
     	COLUMN_RID,
+    	COLUMN_RNAME,
     	COLUMN_PRIOR,
     	COLUMN_POLLTIME,
     	COLUMN_TIMEADD,
@@ -300,13 +302,6 @@ public class HAND implements IHANDService, IFloodlightModule {
 		}
 
 	}
-    
-	 //TODO
-    /**
-     * Add host (DONE!) 5/1/2013
-     * 
-     * Remove host //TODO
-     */
 	
 	
 	/**
@@ -370,6 +365,56 @@ public class HAND implements IHANDService, IFloodlightModule {
 		
 		
 	}
+	
+	 //TODO
+    /**
+     * Add host (DONE!) 5/1/2013
+     * 
+     * Remove host //TODO ****************************
+     */
+	
+	//TODO
+    /**
+     * Add/Remove rules
+     * 
+     * Rules deal with all other modules in Floodlight.
+     * LB 			- Load Balancer 
+     * AFR / DFR 	- Add/Remove Firewall Rule
+     * PSF			- Push Static Flow
+     * AQOS / DQOS  - Add/Remove QoS
+     * 
+     * ***Rules must be check every time data is polled for a specific host***
+     *
+     */
+	
+	/**
+	 * Adds a Host Aware Rule to the controller
+	 * @param rule
+	 */
+	public void addHostAwareRule(HANDRule rule){
+		
+		//TODO
+		
+	}
+    
+    //TODO
+    /**
+     * Needs  a way to carry out the rules and a way to
+     * time synchronize HANDRule.getPollingTime() with the system clock
+     * Hosts need to be polled every ^^time^^ that is set.
+     * 
+     * If the metrics add up the carry out the rule.
+     */
+    
+    //TODO
+    /**
+     * need storage source for *Metrics last polled* if a rule states
+     * "If the last polled metrics is above X amount 5 times in a row, carry out rule Y"
+     * The last 4 polls need to be stored.
+     */
+	
+	
+	
 	/**
 	 * This method takes in a user defined host and
 	 * makes sure that Floodlight has seen the host. If
@@ -425,35 +470,6 @@ public class HAND implements IHANDService, IFloodlightModule {
 		return isSeen;
 	}
     
-    //TODO
-    /**
-     * Add/Remove rules
-     * 
-     * Rules deal with all other modules in Floodlight.
-     * LB 			- Load Balancer 
-     * AFR / DFR 	- Add/Remove Firewall Rule
-     * PSF			- Push Static Flow
-     * AQOS / DQOS  - Add/Remove QoS
-     * 
-     * ***Rules must be check every time data is polled for a specific host***
-     *
-     */
-    
-    //TODO
-    /**
-     * Needs  a way to carry out the rules and a way to
-     * time synchronize HANDRule.getPollingTime() with the system clock
-     * Hosts need to be polled every ^^time^^ that is set.
-     * 
-     * If the metrics add up the carry out the rule.
-     */
-    
-    //TODO
-    /**
-     * need storage source for *Metrics last polled* if a rule states
-     * "If the last polled metrics is above X amount 5 times in a row, carry out rule Y"
-     * The last 4 polls need to be stored.
-     */
 
 	/**
 	 * Reads the policies from the storage and creates an
