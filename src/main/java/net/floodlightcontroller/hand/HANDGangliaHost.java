@@ -2,8 +2,6 @@ package net.floodlightcontroller.hand;
 
 import java.util.ArrayList;
 
-import net.floodlightcontroller.util.MACAddress;
-
 
 /**
  * 
@@ -19,7 +17,7 @@ public class HANDGangliaHost implements Comparable<HANDGangliaHost>{
 	public String hostName; //Translates the host name used for the RRDFetch (Required)
 	public String domain;	//domain the host is in.(Optional)
 	public int ipAddress; //can use IPv4.toIPv4Address(String add) (Required)
-	public MACAddress macAddress; //can use MACAddress.valueOf(String MACadd)
+	public long macAddress; //can use MACAddress.valueOf(String MACadd)
 	public ArrayList<Long> firstHops;	//list of Swutch IDs for first hop OF switch.
 	public long timeAdded;
 	
@@ -30,7 +28,7 @@ public class HANDGangliaHost implements Comparable<HANDGangliaHost>{
 		this.hostName = null;
 		this.domain = null;
 		this.ipAddress = 0;
-		this.macAddress = null;
+		this.macAddress = 0;
 		this.firstHops = new ArrayList<Long>();
 		this.timeAdded = this.getCurrentTime();
 	}
@@ -88,7 +86,7 @@ public class HANDGangliaHost implements Comparable<HANDGangliaHost>{
 		result = primeNum * result + cluster.hashCode();
 		result = primeNum * result + hostName.hashCode();
 		result = primeNum * result + ipAddress;
-		result = primeNum * result + macAddress.hashCode();
+		result = primeNum * result + (int) macAddress;
 		return result;
 		
 	}

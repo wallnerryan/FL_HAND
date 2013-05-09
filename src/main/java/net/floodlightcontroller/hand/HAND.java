@@ -23,7 +23,6 @@ import net.floodlightcontroller.core.module.IFloodlightService;
 import net.floodlightcontroller.restserver.IRestApiService;
 import net.floodlightcontroller.staticflowentry.IStaticFlowEntryPusherService;
 import net.floodlightcontroller.storage.IStorageSourceService;
-import net.floodlightcontroller.util.MACAddress;
 import net.floodlightcontroller.devicemanager.IDevice;
 import net.floodlightcontroller.devicemanager.IDeviceService;
 import net.floodlightcontroller.devicemanager.SwitchPort;
@@ -357,7 +356,7 @@ public class HAND implements IHANDService, IFloodlightModule {
 			hostEntry.put(COLUMN_CLUSTER, host.cluster);
 			hostEntry.put(COLUMN_NAME, host.hostName);
 			hostEntry.put(COLUMN_IPADD, Integer.toString(host.ipAddress));
-			hostEntry.put(COLUMN_MACADD, host.macAddress.toString());
+			hostEntry.put(COLUMN_MACADD, Long.toString(host.macAddress));
 			hostEntry.put(COLUMN_FIRSTHOPS, host.firstHops.toString());
 			hostEntry.put(COLUMN_TIMEADDED, Long.toString(host.timeAdded));
 			storageSource.insertRow(HOSTS_TABLE_NAME, hostEntry);
@@ -388,8 +387,8 @@ public class HAND implements IHANDService, IFloodlightModule {
 	public boolean hostSeenByFloodlight(HANDGangliaHost host){
 		boolean isSeen = false;
 		Iterator<? extends IDevice> hosts;
-		if(host.macAddress != null){
-			hosts = devices.queryDevices(host.macAddress.toLong(), null, host.ipAddress,null, null);
+		if(host.macAddress != 0){
+			hosts = devices.queryDevices(host.macAddress, null, host.ipAddress,null, null);
 		}
 		else{
 			hosts = devices.queryDevices(null, null, host.ipAddress, null, null);
@@ -401,20 +400,22 @@ public class HAND implements IHANDService, IFloodlightModule {
 			for(Integer address : deviceAddresses){
 				if(address == host.ipAddress){
 					isSeen = true;
+					logger.info("******Host confirmed by Floodlight******");
 					/**
 					 * some of the host information is optional,
 					 * if the user doesn't enter it, Floodlight
 					 * knows about it.
 					 */
-					if(host.firstHops == null){
+					if(host.firstHops.isEmpty()){
 						ArrayList<Long> switches = new ArrayList<Long>();
 						for(SwitchPort p : device.getAttachmentPoints()){
 							switches.add(p.getSwitchDPID());
+							logger.info("***Adding first hop***");
 						}
 						host.firstHops = switches;
 					}
-					if(host.macAddress == null){
-						host.macAddress = MACAddress.valueOf(device.getMACAddress());
+					if(host.macAddress == 0){
+						host.macAddress = device.getMACAddress();
 					}
 					break;
 				}

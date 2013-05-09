@@ -72,17 +72,23 @@ public class HANDGangliaHostsResource extends ServerResource {
 				/**Required Field Checks**/
 				//hostname and ip is required. b/c Ganglia stores RRD's by them.
 				if(host.hostName == null || host.ipAddress == 0){
-					status = "Must provide Hostname and IP Address";
+					status = "{\"status\" : \"Must provide Hostname and IP Address.\"}";
 				}
-				if(host.cluster == null){
+				else if(host.cluster == null){
 					logger.info("Fetching Cluster Information...");
 					if(existsInAnyCluster(host)){
 						//Send to HAND Module for addition.
 						hand.addGangliaHost(host);
-						status = "Success, adding host to HAND.";
+						status = "{\"status\" : \"Adding host to Host Aware Network\"}";
 					}else{
-						status = "Host does not exist in any cluster.";
+						status = "{\"status\" : \"Host does not exist in any cluster\"}";
 					}
+				}
+				//else just add it, it has enough information
+				else{
+					/** Should add a check cluster method here?**/
+					hand.addGangliaHost(host);
+					status = "{\"status\" : \"Adding host to Host Aware Network\"}";
 				}
 				/**
 				 * Cluster will be add by existsInAnyCluster() if host RRD is found.
@@ -167,7 +173,7 @@ public class HANDGangliaHostsResource extends ServerResource {
     				host.domain = jsonText;
     			}
     			else if(name == "mac_address"){
-    				host.macAddress = MACAddress.valueOf(jsonText);
+    				host.macAddress = Long.parseLong(jsonText);
     			}
     			else if(name == "cluster"){
     				host.cluster = jsonText;
@@ -209,7 +215,7 @@ public class HANDGangliaHostsResource extends ServerResource {
 		Iterator<HANDGangliaHost> hostIter = hostList.iterator();
 		while(hostIter.hasNext()){
 			HANDGangliaHost h = hostIter.next();
-			if(host.isSameAs(h) || host.macAddress.equals(h.macAddress)){
+			if(host.isSameAs(h) || host.macAddress == h.macAddress){
 				return true;
 			}
 		}
