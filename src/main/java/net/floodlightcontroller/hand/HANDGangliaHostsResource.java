@@ -250,6 +250,8 @@ public class HANDGangliaHostsResource extends ServerResource {
 			if(child.isDirectory() && !(child.toString().contains("unspecified")) 
 					&& !(child.toString().contains("__SummaryInfo__")) ){
 				logger.info("Checking Cluster: {}", child.toString()); //debug
+				String[] strDirs = child.toString().split("/");
+				String curDir = strDirs[strDirs.length-1];
 				for(File rrd : child.listFiles()){
 					String[] strRRDs = rrd.toString().split("/");
 					String compareRRD = strRRDs[strRRDs.length-1];
@@ -259,7 +261,7 @@ public class HANDGangliaHostsResource extends ServerResource {
 						found = true;
 						//this is the current directory 
 						//being searched.
-						host.cluster = child.toString();
+						host.cluster = curDir;
 						break;
 					} else {
 						new String();
@@ -269,7 +271,7 @@ public class HANDGangliaHostsResource extends ServerResource {
 							//set the host's cluster if found
 							//this is the current directory 
 							//being searched.
-							host.cluster = child.toString();
+							host.cluster = curDir;
 							break;
 						}
 					}
