@@ -506,8 +506,9 @@ public class HAND implements IHANDService, IFloodlightModule {
 	private void getGangliaRRDLocation() {
 		Properties props = new Properties();
 		try {
-			props.load(new FileInputStream("/src/main/resources/floodlightdefault.properties"));
+			props.load(new FileInputStream("src/main/resources/floodlightdefault.properties"));
 			gangliaBasePath = props.getProperty("net.floodlightcontroller.hand.GangliaBasePath");
+			//System.out.println("GANGLIA BASE PATH AS: "+gangliaBasePath); //debug
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
