@@ -1,5 +1,5 @@
-``hand`` *HostAware Networking Decisions* 
-  automatic host control in SDN environments.
+``HAND`` *HostAware Networking Decisions* 
+automatic host control in SDN environments.
 ==================================================================================
 
 
