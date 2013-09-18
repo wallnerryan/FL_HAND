@@ -463,9 +463,12 @@ public class HAND implements IHANDService, IFloodlightModule {
 						host.macAddress = device.getMACAddress();
 					}
 					break;
+				}else{
+					logger.error("******Host ["+host.ipAddress+"/"+host.hostName+"] Not seen by Floodlight");
+					isSeen = false;
+					}
 				}
 			}
-		}
 		//return whether Floodlight has seen the host.
 		return isSeen;
 	}
