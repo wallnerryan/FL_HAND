@@ -261,25 +261,20 @@ public class HANDGangliaHostsResource extends ServerResource {
 							host.ipAddress).toLowerCase()+ "  to {}", compareRRD ); //DEBUG
 					if(compareRRD.contains(fqdn.toLowerCase())){
 						found = true;
+						//We only want what ganglia can see.
+						host.ipAddress = 0;
 						//this is the current directory 
 						//being searched.
 						host.cluster = curDir;
 						break;
 					}
-					//fix for checking if FQDN has the hostname inside the full FQDN
-					//DEPRECIATED b/c of hostname strip function
-					/*}else if(compareRRD.contains((fqdn.split(".")[0]))){
-						found = true;
-						//this is the current directory 
-						//being searched.
-						host.cluster = curDir;
-						break;
-					}*/
 					else {
 						new String();
 						if(compareRRD.contains(IPv4.fromIPv4Address(
 								host.ipAddress).toLowerCase())){
 							found = true;
+							//We only want what ganglia can see.
+							host.hostName = "";
 							//set the host's cluster if found
 							//this is the current directory 
 							//being searched.
