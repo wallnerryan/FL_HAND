@@ -26,7 +26,7 @@ public class HANDGangliaHost implements Comparable<HANDGangliaHost>{
 		this.hostId = 0;
 		this.cluster = null;
 		this.hostName = null;
-		this.domain = null;
+		this.domain = ""; //change so we can add a host without a domain.
 		this.ipAddress = 0;
 		this.macAddress = 0;
 		this.firstHops = new ArrayList<Long>();

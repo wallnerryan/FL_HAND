@@ -236,8 +236,9 @@ public class HANDGangliaHostsResource extends ServerResource {
 		String dir = aConsumer.metricPath;
 		
 		String fqdn;
-		if(host.domain.equals(null)){
-			host.domain = "";
+		if(host.domain == ""){
+			host.domain = "local";
+			logger.info("Host "+host.hostName+" is without domain, adding .local");
 			fqdn = host.hostName+host.domain;
 		}else{
 			fqdn = host.hostName+"."+host.domain;
