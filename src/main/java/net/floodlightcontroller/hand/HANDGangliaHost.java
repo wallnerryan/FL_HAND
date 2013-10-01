@@ -40,8 +40,8 @@ public class HANDGangliaHost implements Comparable<HANDGangliaHost>{
 	public int genUniqueId() {
 		int uid = this.hashCode();
 		if (uid <= 0 ){
-			uid = Math.abs(uid);
 			uid = uid * 1553;
+			uid = Math.abs(uid);
 		}
 		return uid;
 	}
