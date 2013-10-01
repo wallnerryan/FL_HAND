@@ -67,6 +67,17 @@ public static Logger logger = LoggerFactory.getLogger(HANDGangliaHostsResource.c
 				
 				/**
 				 * Add Code to handle checks
+				 * e.g 
+				 * 
+				 * is firewall rule, is the firewall enabled?
+				 * is a qos rule, is QoS enabled?
+				 * is the polling time good? make sense?
+				 * 
+				 * *Host Assoc is check in json parse
+				 * *ActionType is checked in json parse
+				 * *Metrics are parsed in json parse
+				 * 
+				 * 
 				 * Then add the rule
 				 * 
 				 * TODO !!!!!!**************
@@ -140,14 +151,65 @@ public static Logger logger = LoggerFactory.getLogger(HANDGangliaHostsResource.c
     			else if(name == "rule_name"){
     				rule.name = jsonText;
     			}
-    			
-    			//TODO
-    			 /**
-    			  * 
-    			  *  !!!!!!!!!!!!!!!!!!!!
-    			  * 
-    			  * 
-    			  */
+    			else if(name == "priority"){
+    				//TODO
+    			}
+    			else if(name == "polling_time"){
+    				//TODO
+    			}
+    			else if(name == "active"){
+    				//TODO
+    			}
+    			else if(name == "check_limit"){
+    				//TODO
+    			}
+    			else if(name == "attached_to"){
+    				//TODO given host X, get the ID from the list of
+    				//hosts known by HAND
+    			}
+    			else if(name == "metrics"){
+    			//“metrics”:{”<m1>”:"<threshold>”}....(list assumes “and” )
+    		    //TODO store key value pars in a json string.
+    			//Call parseMetrics
+    			//Return HashMap<String, HANDThreshold>
+    			//e.g a {"load_one":"gt-5"} should result in a 
+    			// rule that tracks Load of 1 Min that triggers when it is >5 Load/Procs
+    			//Also, make sure ganglia can see this metric
+    			//TODO checkGangliaMetrics(HashMap<String, HANDThreshold> metrics)
+    				
+    			}
+    			else if(name == "action_type"){
+    				//TODO
+    				/** Can be one of the following from
+    				 * net.floodlightcontroller.hand.HandRule.java
+    				 *  RPRT,	//Report threshold is reported
+						AFR, 	//Add Firewall Rule
+						DFW, 	//Delete Firewall Rule
+						LB, 	//LoadBalance (placeholder for now //TODO )
+						PSF, 	//Push Static Flow
+						AQOS, 	//Add QoS Rule
+						DQOS,	//Delete QoS Rule
+						KR,		//Kill Route
+    				 */
+    				//TODO call boolean checkActionType from HandRule
+    				// change the string to ALL CAPS.
+    			}
+    			else if(name == "action_string"){
+    				//TODO
+    				/**
+    				 * This is an odd one, depending on the
+    				 * ActionType, we will need different information from
+    				 * the actionString. I.E a Adding a Firewall Rule needs
+    				 * specific info rather than Pushing a Static Flow
+    				 */
+    				//TODO Call parseActionString(rule.action, rule.actionString)
+    				//parsing the action string first looks at the ActionType,
+    				//depending on the ActionType, the functions will determine 
+    				//what information it needs to call to the correct
+    				//controller API and checl the action_string if has given the
+    				//correct information via key:value pairs.
+    				rule.actionString = jsonText;
+    			}
     			
     			
     		}catch(JsonParseException e){

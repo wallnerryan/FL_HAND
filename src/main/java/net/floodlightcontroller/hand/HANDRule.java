@@ -28,10 +28,11 @@ public class HANDRule implements Comparable<HANDRule>{
 	//TODO LoadBalancer Integration
 	
 	public ActionType action;
+	public String actionString;
 	
 	public enum ActionType{
 		RPRT,	//Report threshold is reported
-		AFW, 	//Add Firewall Rule
+		AFR, 	//Add Firewall Rule
 		DFW, 	//Delete Firewall Rule
 		LB, 	//LoadBalance (placeholder for now //TODO )
 		PSF, 	//Push Static Flow
@@ -44,18 +45,19 @@ public class HANDRule implements Comparable<HANDRule>{
 		this.ruleId = 0;
 		this.name = null;
 		this.priority = 0;
-		this.pollingTime = 0;
+		this.pollingTime = 1; //default to 1 second
 		this.timeAdded = this.getCurrentTime();
-		this.nextCheckTime = 0;
+		this.nextCheckTime = 0; //when checked, add polling time to current time
 		this.active = false;
 		this.metrics = new HashMap<String, HANDThreshold>();
 		this.fRule = null;
 		this.qos = null;
 		this.staticFlow = null;
 		this.hostAssoc = 0;
-		this.checkLimit = 0;
+		this.checkLimit = Integer.MAX_VALUE; //essentially unlimited checks.
 		this.currentCheck = 0;
 		this.action = ActionType.RPRT; //Default to Report
+		this.actionString = ""; //This correlates to the ActionType
 		
 		
 	}
@@ -116,6 +118,14 @@ public class HANDRule implements Comparable<HANDRule>{
 	public int compareTo(HANDRule rule) {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+	
+	/**
+	 *TODO
+	 */
+	public boolean checkActionType(String actionString){
+		//TODO check string against ActionTypes
+		return true;
 	}
 	
 	/**
