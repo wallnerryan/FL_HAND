@@ -162,8 +162,6 @@ public class HANDGangliaHostsResource extends ServerResource {
     			}
     			else if(name == "host_name"){
     				host.hostName = jsonText;
-    				//used to strip "host.example.com" to "host"
-    				host.hostName = stripHostName(host.hostName);
     			}
     			else if(name == "ip_address"){
     				host.ipAddress = IPv4.toIPv4Address(jsonText);
@@ -204,34 +202,6 @@ public class HANDGangliaHostsResource extends ServerResource {
 	}
 	
 	/**
-	 * @param hostname
-	 * @return hostname (without domain)
-	 *  
-	 **/
-	public static String stripHostName(String hostName){
-		String host = hostName;
-		String domainDelimiter = ".";
-		if (hostName.contains(".")){
-			String[] hostStrs = host.split(domainDelimiter);
-			try{
-				host = hostStrs[0];
-				if (host != null || host != ""){
-					return host;
-				}
-			}
-			catch(NullPointerException e){
-				logger.error("Error parsing hostname in host array, please remove periods from the name and try again");
-			}
-			catch(Exception e){
-				logger.error("Error parsing hostname, please try again");
-			}
-		}else{
-			logger.info("Hostname unchanged.");
-		}
-		return host;
-	}
-	
-	/**
 	 * 
 	 * @param host
 	 * @param hostList
@@ -266,12 +236,13 @@ public class HANDGangliaHostsResource extends ServerResource {
 		String dir = aConsumer.metricPath;
 		
 		String fqdn;
-		if(host.domain == ""){
+		if(host.domain == "" && !(host.hostName.contains("."))){
+			logger.info("hostname seems to not have a domain, adding .local");
 			host.domain = ".local";
-			logger.info("Host "+host.hostName+" is without domain, adding .local");
 			fqdn = host.hostName+host.domain;
 		}else{
-			fqdn = host.hostName+"."+host.domain;
+			logger.info("hostname seems to contain it's domain name");
+			fqdn = host.hostName;
 		}
 		
 		File containingPath = new File(dir);
