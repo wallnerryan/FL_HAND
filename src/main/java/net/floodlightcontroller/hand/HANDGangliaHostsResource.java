@@ -163,7 +163,7 @@ public class HANDGangliaHostsResource extends ServerResource {
     			else if(name == "host_name"){
     				host.hostName = jsonText;
     				//used to strip "host.example.com" to "host"
-    				stripHostName(host.hostName);
+    				host.hostName = stripHostName(host.hostName);
     			}
     			else if(name == "ip_address"){
     				host.ipAddress = IPv4.toIPv4Address(jsonText);
@@ -294,7 +294,14 @@ public class HANDGangliaHostsResource extends ServerResource {
 						//being searched.
 						host.cluster = curDir;
 						break;
-					} else {
+					//fix for checking if FQDN has the hostname inside the full FQDN
+					}else if(compareRRD.contains((fqdn.split(".")[0]))){
+						found = true;
+						//this is the current directory 
+						//being searched.
+						host.cluster = curDir;
+						break;
+					}else {
 						new String();
 						if(compareRRD.contains(IPv4.fromIPv4Address(
 								host.ipAddress).toLowerCase())){
@@ -310,7 +317,6 @@ public class HANDGangliaHostsResource extends ServerResource {
 			}
 			
 		}
-		
 		return found;
 	}
 
