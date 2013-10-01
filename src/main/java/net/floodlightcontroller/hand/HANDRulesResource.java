@@ -168,7 +168,7 @@ public static Logger logger = LoggerFactory.getLogger(HANDGangliaHostsResource.c
     				//hosts known by HAND
     			}
     			else if(name == "metrics"){
-    			//“metrics”:{”<m1>”:"<threshold>”}....(list assumes “and” )
+    			//"metrics":{"<m1>":"<threshold>"}....(list assumes "and" )
     		    //TODO store key value pars in a json string.
     			//Call parseMetrics
     			//Return HashMap<String, HANDThreshold>
