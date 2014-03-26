@@ -185,8 +185,7 @@ public class HAND implements IHANDService, IFloodlightModule {
     	timer.scheduleAtFixedRate(new TimerTask(){
     		public void run(){
     			if(!(enabled)){
-    				//Cancel the task if HAND is not enabled.
-    				
+    				//Cancel 
     				//This is important to check before each second
     				//in case HAND becomes disabled at any point.
     				timer.cancel();
@@ -199,11 +198,18 @@ public class HAND implements IHANDService, IFloodlightModule {
     				/**
     				 * Logic here needs carry out the above description 
     				 * 
-    				 * 	1. current time needs to be checked against all rules
-    				 * 	2. If a rule matches, take action
-    				 * 	3. Queuing and concurrency methods need to be thought of here.
-    				 * 	4. For the above (3) use PriorrityBlockingQueue for action on matches
+    				 * 	-Queuing, possibly threading, and concurrency methods need to be thought of here.
+    				 * 	-For the above use PriorrityBlockingQueue ir 
+    				 *   a PriorityQueue for action on matches
     				 */
+    				
+    				// Current time should be updated on rules when checked, if 
+    				// checking time, is < pollingTime then pass. 
+    				//1.call function to check rules bases on priority
+    				//2.Rules are sent into priorityqueue bases on .. priority setting
+    				//3.Rule is checked against associated host metrics and thresholds in rule
+    				//4.If threshold is met, rule.action is carried out.
+    				//5. maybe a intoActionFunc(Action action) to carry out rules actions to controller.
     				
     			}
     		}
