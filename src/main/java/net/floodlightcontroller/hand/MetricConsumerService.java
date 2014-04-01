@@ -9,6 +9,8 @@ import java.util.Date;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 import net.sourceforge.jrrd.*;
 
 /**
@@ -16,7 +18,9 @@ import net.sourceforge.jrrd.*;
  * @author wallnerryan
  *
  */
-
+// I dont think abstract class is right here
+// abstract classes should have abstract methods?
+///Lets rethink this implementation
 abstract class MetricConsumerService {
 	 protected static Logger logger = LoggerFactory.getLogger(MetricConsumerService.class);
 	
@@ -26,8 +30,17 @@ abstract class MetricConsumerService {
 	 * (net.floodlightcontroller.hand.GangliaBasePath) 
 	 * 
 	 * in Ganglia Controller Properties
+	 * 
 	 */
+	 
+	 
 	public String metricPath = HAND.gangliaBasePath;
+	
+	//Supported metrics
+	//Can be more, used for when API is called to get ALL metrics for a given host.
+	// could be something on setting.xml (as ganglia setup determines this really. 
+	String[] myStrings = new String[] {"disk","cpu","netout","netin","mem"};
+	List<String> supportedMetrics = new ArrayList<String>();
 	
 	//Specific to your RRDTool fetch request
 	Date startDate;
@@ -178,12 +191,17 @@ abstract class MetricConsumerService {
 	}
 	
 	
+	
+	
 	//Can be extended out from abrast class.
 	
 	/**
 	 * Get the bytes inbound to the host
 	 * Uses the Start and End times to subtract from current TFE(Time from Epoch)
 	 * @param start
+	
+	 * 
+	 * 
 	 * @param end
 	 * @param step
 	 * @param cluster
@@ -352,5 +370,8 @@ abstract class MetricConsumerService {
 	 */
 	
 
+   /**
+    * Get all metrics for a single host
+    */
 
 }
