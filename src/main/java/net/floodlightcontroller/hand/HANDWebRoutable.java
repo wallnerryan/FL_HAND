@@ -36,6 +36,23 @@ public class HANDWebRoutable implements RestletRoutable {
          *a host with MAC/IP pairing
          **/
         router.attach("/hosts/json", HANDGangliaHostsResource.class);
+        
+        //metric api service
+        //router.attach("/metrics/{host}/{type}/json", HANDMetricHostTypeResource.class);
+        //TODO Need to add Class
+        
+        router.attach("/metrics/{host}/json",  HANDMetricHostResource.class);
+        //http://10.11.17.120:8080/wm/hand/metrics/host1/disk/json
+        
+        /**
+         * This may be unrealistic, getting all nodes and all metrics,
+         * Calls for super overlaod in large networks :)
+         * We can already get hosts from API, lets say a combo
+         * of host lookup, then metrics with either all or type should be called.
+         */
+        //router.attach("/metrics/json", HANDMetricsResource.class);
+        //http://10.11.17.120:8080/wm/hand/metrics/json
+        
         return router;
     }
 

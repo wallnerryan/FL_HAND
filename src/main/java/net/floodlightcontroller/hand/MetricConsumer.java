@@ -41,6 +41,19 @@ public class MetricConsumer {
 	String host;
 	String rrd;
 	
+	/*//TODO
+	public void setDefaults(){
+	    //Get the current time?
+	    //What is the time/date 5 hours ago?
+		Date tempStartDate = //TODO 
+		Date tempEndDate = //TODO
+		this.startDate = tempStartDate
+		.
+		.
+		.
+	}
+	*/
+	
 	public void setStartDate(Date sDate){
 		this.startDate = sDate;
 	}
